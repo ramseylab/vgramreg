@@ -33,8 +33,6 @@ class ModelSelection():
             SD = self.X_train['std'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
 
         self.y_LOD = 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
-
-        print(self.y_LOD)
     
     def save(self, path):
         with open(path, 'wb') as f:
@@ -291,7 +289,6 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score, path_na
         dict_['Scores'].append(best_score)
         dict_['features'].append(selected_feature)
 
-    print(dict_)
     df = pd.DataFrame.from_dict(dict_)
 
     
