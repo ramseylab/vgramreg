@@ -37,7 +37,7 @@ def select_model(model_name, C_value=1):
     elif model_name=='XGB':
         return xgb.XGBRegressor()
 
-    elif ('Linear' in model_name) or ('univariate' in model_name):
+    elif ('Linear' in model_name) or ('univariate' in model_name) or ('multivariate' in model_name) :
         return LinearRegression()
     
     elif model_name=='Lasso':

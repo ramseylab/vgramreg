@@ -149,7 +149,9 @@ def visualization_testing_dataset(dict_, path_name, r2_score=True, only_one_mult
                  'univariate, max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
+                 'RF': '^',\
                  'Gaussian Process': 'v',\
+                 'GP': 'v',\
                  'Linear': 'x'}
     decimal_prec = 3 if r2_score else 1
 

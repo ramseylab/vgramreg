@@ -128,12 +128,13 @@ def find_performance_metric(model_names, r2_top):
     r2_scores  = {'Models':[], 'Scores':[]}
     per_errors = {'Models':[], 'Scores':[]}
 
-    model_names += r2_top['Models'].values.tolist()
-    print("Model Names", model_names)
+    model_names = model_names if not(only_one_multivariate) else r2_top['Models'].values.tolist()
+
+    # model_names = list(set(model_names))
 
     for model_name in tqdm(model_names):
         # print(model_name)
-        model_name = 'Linear' if (model_name == 'multivariate') else model_name
+        model_name = 'Linear' if ((model_name == 'multivariate')) else model_name
 
         model_r2   = ModelSelection(model_name, X_train, y_train)
         model_per  = ModelSelection(model_name, X_train, y_train)
@@ -148,8 +149,9 @@ def find_performance_metric(model_names, r2_top):
         model_r2_scores      = r2_score(y_test, y_pred_r2)
 
         # name = name_conversion[model_name]
-        # name = 'Linear' if not (only_one_multivariate) and (model_name == 'Linear') else 'multivariate'
-            
+        # if not (only_one_multivariate) and (model_name == 'Linear'): name = 'Linear'
+        model_name = 'multivariate' if ((model_name == 'Linear') and only_one_multivariate) else model_name
+
         r2_scores['Models'].append(model_name) 
         per_errors['Models'].append(model_name)
         
@@ -191,14 +193,14 @@ if __name__ == '__main__':
         df = feature_selection_tabularize(feature_selection_per_diff[model])
         df.to_excel(f'Outputs/feature_selection_list/feature_selection_per_error_{model}.xlsx', index=False)
 
-    comparision_model = 'uni_multivariate' if only_one_multivariate else 'linear_nonlinear'
+    for only_one_multivariate in [True, False]:
+        comparision_model = 'uni_multivariate' if only_one_multivariate else 'linear_nonlinear'
+        r2_top = visualize_highest_score_feature_selection(feature_selection_r2score, f"{output_path_name}/{comparision_model}_5_fold_r2score.png",    model_name_conversion, only_one_multivariate=only_one_multivariate, legends=False)
+        visualize_highest_score_feature_selection(feature_selection_per_diff, f"{output_path_name}/{comparision_model}_5_fold_per_error.png", model_name_conversion, r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
 
-    r2_top = visualize_highest_score_feature_selection(feature_selection_r2score, f"{output_path_name}/{comparision_model}_5_fold_r2score.png",    model_name_conversion, only_one_multivariate=only_one_multivariate, legends=False)
-    visualize_highest_score_feature_selection(feature_selection_per_diff, f"{output_path_name}/{comparision_model}_5_fold_per_error.png", model_name_conversion, r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
+        # print(r2_top['Models'].values.tolist())
+        test_r2_scores, test_per_errors = find_performance_metric(model_names, r2_top)
 
-    print(r2_top['Models'].values.tolist())
-    # test_r2_scores, test_per_errors = find_performance_metric(model_names, r2_top)
-
-    # print(test_r2_scores, test_per_errors)
-    # visualization_testing_dataset(test_r2_scores,  f'{output_path_name}/testing_r2_score.png',  r2_score=True,  only_one_multivariate=only_one_multivariate, legends=False)
-    # visualization_testing_dataset(test_per_errors, f'{output_path_name}/testing_per_error.png', r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
+        # print(test_r2_scores, test_per_errors)
+        visualization_testing_dataset(test_r2_scores,  f'{output_path_name}/{comparision_model}_testing_r2_score.png',  r2_score=True,  only_one_multivariate=only_one_multivariate, legends=False)
+        visualization_testing_dataset(test_per_errors, f'{output_path_name}/{comparision_model}_testing_per_error.png', r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
