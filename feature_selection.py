@@ -21,16 +21,16 @@ class ModelSelection():
         self.all_feature_scores = []
 
         model_yLOD = LinearRegression()
-        try:
-            model_yLOD.fit(self.X_train[['univariate, std(S)']], self.y_train) # Selecting standard deviation of sample as a feature
-        except:
-            model_yLOD.fit(self.X_train[['std']], self.y_train)
+    #try:
+        model_yLOD.fit(self.X_train[['univariate, std(S)']], self.y_train) # Selecting standard deviation of sample as a feature
+        # except:
+        #     model_yLOD.fit(self.X_train[['std']], self.y_train)
         S  = model_yLOD.coef_[0]                          # Slope
 
-        try:
-            SD = self.X_train['univariate, std(S)'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
-        except:
-            SD = self.X_train['std'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
+        
+        SD = self.X_train['univariate, std(S)'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
+        # except:
+        #     SD = self.X_train['std'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
 
         self.y_LOD = 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
     

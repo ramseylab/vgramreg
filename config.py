@@ -28,3 +28,10 @@ models_features_r2 = {
                          }
 
 models_features_per = models_features_r2.copy()
+
+
+paired_test = [('Linear', 'univariate, std(S)'), \
+               ('Linear', 'KNN'), \
+               ('Linear', 'RF'), \
+               ('Linear', 'GP')
+              ]

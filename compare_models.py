@@ -21,6 +21,8 @@ import matplotlib.lines as mlines
 from ML_testing import select_model
 from graph_visualization import visualize_highest_score_feature_selection, feature_selection_tabularize, visualization_testing_dataset
 from config import *
+from error_metrics import per_error
+from paired_permutation_test import find_paired_permutation_test
 
 from sklearn.metrics import r2_score
 
@@ -102,27 +104,6 @@ def select_features(X_train, y_train, model_names):
 
     return feature_selection_r2score, feature_selection_per_diff
 
-def per_error(y_test, y_pred, y_LOD):
-    mask           = (y_test != 0)    # Non Zero Concentration
-    zero_mask      = ~(mask)          # Zero Concentration
-
-    y_pred         = np.maximum(y_pred, 0.0)
-    # y_LOD          = 1.6193237802284837
-
-    # Only for non zero concentration
-    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask])/(0.5*(y_test[mask] + y_pred[mask]))
-   
-    # zero concentration
-    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) / y_LOD
-
-    assert not(np.isnan(zero_per_error).any())
-    assert not(np.isnan(non_zero_per_error).any())
-
-    per_error         = np.concatenate((non_zero_per_error, zero_per_error))
-    per_error         = np.mean(per_error) * 100
-
-    return per_error
-
 
 def find_performance_metric(model_names, r2_top):
     r2_scores  = {'Models':[], 'Scores':[]}
@@ -130,10 +111,8 @@ def find_performance_metric(model_names, r2_top):
 
     model_names = model_names if not(only_one_multivariate) else r2_top['Models'].values.tolist()
 
-    # model_names = list(set(model_names))
-
-    for model_name in tqdm(model_names):
-        # print(model_name)
+    for model_name in model_names:
+        
         model_name = 'Linear' if ((model_name == 'multivariate')) else model_name
 
         model_r2   = ModelSelection(model_name, X_train, y_train)
@@ -183,9 +162,11 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_dataset(datasets)
     feature_selection_r2score, feature_selection_per_diff = select_features(X_train, y_train, model_names)
 
-    # print(X_train.columns, X_test.columns)
+    # Perform Paired wise permutation test
+    dataset = (X_train, X_test, y_train, y_test)
+    permutation_test = find_paired_permutation_test(dataset, models_features_per, models_features_r2)
    
-    # Generate Excel Table showing performance metrics for each step of feature selection staring from univariate model
+    #Generate Excel Table showing performance metrics for each step of feature selection staring from univariate model
     for model in model_names:
         df = feature_selection_tabularize(feature_selection_r2score[model])
         df.to_excel(f'Outputs/feature_selection_list/feature_selection_r2score_{model}.xlsx', index=False)
@@ -204,3 +185,7 @@ if __name__ == '__main__':
         # print(test_r2_scores, test_per_errors)
         visualization_testing_dataset(test_r2_scores,  f'{output_path_name}/{comparision_model}_testing_r2_score.png',  r2_score=True,  only_one_multivariate=only_one_multivariate, legends=False)
         visualization_testing_dataset(test_per_errors, f'{output_path_name}/{comparision_model}_testing_per_error.png', r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
+
+
+    print("########Paired Permutation Test##############")
+    print(permutation_test)
