@@ -9,7 +9,7 @@ from sklearn.base import clone
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-from src.ML_testing import select_model
+from src.load_models import select_model
 
 class ModelSelection():
     def __init__(self, model_name, X_train, y_train):
@@ -72,7 +72,7 @@ class ModelSelection():
         return np.array(per_diff_all) 
 
     def calculate_r2_score(self, model, X, y, kf):
-        scores = [] #cross_val_score(model, X, y, cv=kf)
+        scores = []
 
         for train_index, test_index in kf.split(X):
             model_ = clone(model)
@@ -135,8 +135,6 @@ class ModelSelection():
                 temp[str(key)] = score
                 
 
-            # print("Best Score", sel_one_line_feature, one_line_best_score)
-
             if r2_score:
                 if one_line_best_score > best_score:
                     best_score = one_line_best_score
@@ -169,129 +167,3 @@ class ModelSelection():
         # Return both training and testing r2 score
         return self.model.score(self.X_train[self.selected_features], self.y_train), \
                self.model.score(X_test[self.selected_features], y_test)
-
-def visualize_testing_model(training_testing_scores, output_feature_selection):
-    #output_feature_selection = 'Feature_Selection/ML1_ML2'
-    os.makedirs(os.path.dirname(output_feature_selection), exist_ok=True)
-
-    plt.figure(figsize=(15, 30))
-    new_dict = {}
-    new_dict['Models']      =  list(training_testing_scores.keys())
-
-    if len(list(training_testing_scores.values())[0]) == 2:
-        new_dict['Train_score'] = np.array(list(training_testing_scores.values()))[:, 0]
-        new_dict['Test_score']  = np.array(list(training_testing_scores.values()))[:, 1]
-
-        df = pd.DataFrame.from_dict(new_dict)
-
-        ax = df.plot(x='Models', y=['Train_score', 'Test_score'], kind='bar', legend=False)
-        plt.legend(loc='lower right')
-        for p in ax.patches:
-            ax.annotate(str(round(p.get_height(), 4)), (p.get_x() + p.get_width() / 2., 0.5 * p.get_height()),
-                    ha='center', va='center', xytext=(0, 5), textcoords='offset points',  rotation='vertical')
-
-
-    else:
-        new_dict['Test_score']  = np.array(list(training_testing_scores.values()))[:,0]
-       
-        df = pd.DataFrame.from_dict(new_dict)
-
-        ax = df.plot(x='Models', y=['Test_score'], kind='bar', legend=False)
-        plt.legend(loc='lower right')
-        for p in ax.patches:
-            ax.annotate(str(round(p.get_height(), 4)), (p.get_x() + p.get_width() / 2., 0.5 * p.get_height()),
-                    ha='center', va='center', xytext=(0, 5), textcoords='offset points',  rotation='vertical')
-
-    #plt.tight_layout()
-    plt.savefig(f'{output_feature_selection}', dpi=300, bbox_inches='tight', pad_inches=0.1)
-    plt.clf()
-    
-def visualize_feature_selection(all_dataset_feature_score, data_path, r2_score=True):
-    
-    os.makedirs(data_path, exist_ok=True)
-    plt.figure(figsize=(35, 20))
-    for dataset_name in all_dataset_feature_score:
-
-        num_rows = math.ceil(len(all_dataset_feature_score[dataset_name])/2)
-        for ind, all_feature in enumerate(all_dataset_feature_score[dataset_name]):
-            feature_   = list(all_feature.keys())
-            scores     = list(all_feature.values())
-            
-            if r2_score:
-                colors = ['skyblue' if i != np.argmax(scores) else 'orange' for i in range(len(scores))]
-
-            else:
-                colors = ['skyblue' if i != np.argmin(scores) else 'orange' for i in range(len(scores))]
-
-            if ind < 2:
-                plt.subplot(1, 2, (ind+1))
-            else:
-                plt.subplot(1, 2, (ind%2+1))
-
-            plt.barh(feature_ , scores, color=colors)
-
-            title_name = f"{dataset_name}_number_features_{str(ind+1)}"
-            
-            # Add value annotations to the bars
-            for i, value in enumerate(scores):
-                plt.text(value, i, str(round(value, 4)), ha='left', va='center')
-
-            plt.title(title_name)
-            plt.tight_layout()
-
-            if (ind%2 == 0):
-                plt.savefig(f'{data_path}/{title_name}_{ind}.svg', dpi=300, format='svg', bbox_inches='tight')
-                plt.clf()
-
-
-def visualize_highest_score_feature_selection(all_dataset_feature_score, path_name):
-
-    os.makedirs(os.path.dirname(path_name), exist_ok=True)
-    plt.figure(figsize=(35, 15))
-
-    dict_ = {}
-
-    dict_['Models']   = []
-    dict_['Scores']   = []
-    dict_['features'] = []
-    
-    for dataset_name in all_dataset_feature_score:
-        best_score       = 0
-        selected_feature = None
-        
-        for ind, all_feature in enumerate(all_dataset_feature_score[dataset_name]):
-            feature_   = list(all_feature.keys())
-            scores     = list(all_feature.values())
-
-            max_score, max_ind  = np.max(scores), np.argmax(scores)
-
-            if max_score > best_score:
-                selected_feature = feature_[max_ind]
-                best_score = max_score
-
-            if ('ML1_ML2_Linear' == dataset_name) and (ind ==0):
-                argsort_ = np.argsort(scores)[-4:][::-1]
-                for i in argsort_:
-                    dict_['Models'].append(f'{dataset_name}_{eval(feature_[i])[0]}')
-                    dict_['Scores'].append(scores[i])
-                    dict_['features'].append(feature_[i])
-        
-        dict_['Models'].append(dataset_name)
-        dict_['Scores'].append(best_score)
-        dict_['features'].append(selected_feature)
-
-    df = pd.DataFrame.from_dict(dict_)
-
-    
-    ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False)
-    plt.legend(loc='lower right')
-    
-    for p in ax.patches:
-        ax.annotate(str(round(p.get_height(), 4)), (p.get_x() + p.get_width() / 2., 0.5 * p.get_height()),
-            ha='center', va='center', xytext=(0, 5), textcoords='offset points',  rotation='vertical')
-
-    plt.tight_layout()
-    plt.savefig(f'{path_name}', dpi=300)
-    plt.clf()
-
-    return df

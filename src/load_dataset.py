@@ -1,0 +1,53 @@
+import pandas as pd
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+def find_concentration_distribution(y):
+    all_labels = y.tolist()
+    unique_    = set(all_labels)
+    count = {}
+    for i in unique_: count[i] = all_labels.count(i)
+    
+    return count
+
+def load_dataset(datasets):
+    
+    df1 = pd.read_excel(datasets[0])
+    df2 = pd.read_excel(datasets[1])
+
+    df  = pd.concat([df1, df2])
+    df   
+    X   = df[["peak area", "peak curvature", "peak V", "vcenter", "PH", "signal_mean", "signal_std", \
+                                "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
+    y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+
+    X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+                        'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
+                    'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
+                    'peak V':'univariate, V_at_max(S)', 'dS_dV_max_V':'univariate, V_at_max(dS/dV)', 'dS_dV_min_V':'univariate, V_at_min(dS/dV)',\
+        }, inplace = True)
+
+    # Initialize the StandardScaler
+    scaler = StandardScaler()
+
+    # Fit the scaler to your data
+    scaler.fit(X)
+
+    # Transform the data
+    X_normalized = scaler.transform(X)
+    
+    # Transform the data
+    X_normalized = scaler.transform(X)
+
+    # Convert the numpy array back to a DataFrame
+    X_normalized = pd.DataFrame(X_normalized, columns=X.columns)
+
+    # Split the total dataset into training (70%) and testing (30%) dataset
+    X_train, X_test, y_train, y_test  = train_test_split(X_normalized, y, test_size=0.4, shuffle=True, random_state=20, stratify=y)
+
+    print("######Data Distribution:#########")
+    print("Training", find_concentration_distribution(y_train))
+    print("Testing",  find_concentration_distribution(y_test))
+    print("#################################")
+    return X_train, X_test, y_train, y_test

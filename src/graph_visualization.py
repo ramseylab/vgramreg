@@ -168,8 +168,6 @@ def visualization_testing_dataset(dict_, path_name, r2_score=True, only_one_mult
     title  = f'R2_Score' if r2_score else 'Percent Error (%)'
     ylabel = r'$R^2$' if r2_score else 'Error (%)'
 
-    # Set 
-    # plt.title(f'{title}')
     set_y_lim = 1.0 if r2_score else 70.0
     
     plt.ylim(top=set_y_lim)

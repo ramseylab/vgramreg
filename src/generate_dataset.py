@@ -1,13 +1,13 @@
-from vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
-import scipy.stats as stats
-
-from glob import glob
-
 import scipy
 import os
 import numpy as np
 import pandas as pd
 import sklearn
+
+import scipy.stats as stats
+
+from src.vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
+
 
 def find_first_derivative_peaks(V, Signal):
     V_center        = V[np.argmax(Signal)]
