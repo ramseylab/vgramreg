@@ -88,10 +88,6 @@ def find_performance_metric(model_names: list, r2_top:pd.DataFrame) -> Tuple[dic
 
 if __name__ == '__main__':
 
-    # Lists of dataset paths
-    datasets = ['/Users/sangam/Desktop/Epilepsey/Code/Signal_Analysis/Dataset/2024_02_19_ML1/signal_log_NOrecenter_0.006_0_1.04_0.15_0.17extra_features.xlsx',
-           '/Users/sangam/Desktop/Epilepsey/Code/Signal_Analysis/Dataset/2024_02_22_ML2/signal_log_NOrecenter_0.006_0_1.04_0.15_0.17extra_features.xlsx']
-
     # Name of Models to test
     model_names           = ['Linear', 'KNN', 'RF', 'GP']
 
@@ -106,7 +102,7 @@ if __name__ == '__main__':
     os.makedirs(output_path_feature_list, exist_ok=True)
 
     # Load Training Dataset
-    X_train, X_test, y_train, y_test = load_dataset(datasets)
+    X_train, X_test, y_train, y_test = load_dataset()
     
     # Select the best features for each performance mertrics R2 score and Percent Error
     feature_selection_r2score, feature_selection_per_diff = select_features(X_train, y_train, model_names)
@@ -123,7 +119,7 @@ if __name__ == '__main__':
         df = feature_selection_tabularize(feature_selection_per_diff[model])
         df.to_excel(f'Outputs/feature_selection_list/feature_selection_per_error_{model}.xlsx', index=False)
 
-    # Comparision between the Models
+    # Comparison between the models
     for only_one_multivariate in [True, False]:
         comparision_model = 'uni_multivariate' if only_one_multivariate else 'linear_nonlinear'
 
@@ -137,7 +133,6 @@ if __name__ == '__main__':
         # Plot the R2 score and Percent Error in the Bar chart
         visualization_testing_dataset(test_r2_scores,  f'{output_path_name}/{comparision_model}_testing_r2_score.png',  r2_score=True,  only_one_multivariate=only_one_multivariate, legends=False)
         visualization_testing_dataset(test_per_errors, f'{output_path_name}/{comparision_model}_testing_per_error.png', r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
-
 
     print("########Paired Permutation Test##############")
     print(permutation_test)

@@ -3,11 +3,12 @@ import os
 import numpy as np
 import pandas as pd
 import sklearn
-
 import scipy.stats as stats
 
-from src.vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
+from glob import glob
 
+from src.vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
+from src.config import DATASET_PATH
 
 def find_first_derivative_peaks(V, Signal):
     V_center        = V[np.argmax(Signal)]
@@ -194,7 +195,7 @@ dS_dV_max_peak, dS_dV_min_peak, dS_dV_peak_diff, dS_dV_max_V, dS_dV_min_V, dS_dV
     
     # save stats list to excel
     stats_str = "stats" + data_str
-    signal_str = "signal" + data_str
+    signal_str = "extracted_features.xlsx"
     dataframe_str = "dataframe" + data_str
     conc_df.to_excel(stats_str, index=False,
                      header=["conc", "average", "std", "CV", "T-Statistic", "avg peak", "std peak"])
@@ -210,10 +211,7 @@ dS_dV_max_peak, dS_dV_min_peak, dS_dV_peak_diff, dS_dV_max_V, dS_dV_min_V, dS_dV
     return vg_dict, data_str
 
 if __name__ == '__main__':
-    folders = [
-        '/Users/sangam/Desktop/Epilepsey/Code/Signal_Analysis/Dataset/2024_02_19_ML1',
-        '/Users/sangam/Desktop/Epilepsey/Code/Signal_Analysis/Dataset/2024_02_22_ML2'
-    ]
+    all_dataset = glob(f"{DATASET_PATH}/*")
     
     do_log   = True
     recenter = False
@@ -223,5 +221,5 @@ if __name__ == '__main__':
     w1       = 0.15
     w2       = 0.17
     
-    for dataset_path in folders:
+    for dataset_path in all_dataset:
         conc_df, signal_df = run_vg2(dataset_path, do_log, recenter, bw, s, c, w1, w2)

@@ -1,7 +1,10 @@
 import pandas as pd
+from glob import glob
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+
+from src.config import DATASET_PATH
 
 def find_concentration_distribution(y):
     all_labels = y.tolist()
@@ -11,13 +14,13 @@ def find_concentration_distribution(y):
     
     return count
 
-def load_dataset(datasets):
+def load_dataset():
     
-    df1 = pd.read_excel(datasets[0])
-    df2 = pd.read_excel(datasets[1])
-
-    df  = pd.concat([df1, df2])
-    df   
+    datasets = sorted([f"{i}/extracted_features.xlsx" for i in glob(f'{DATASET_PATH}/*')])
+   
+    df  = [pd.read_excel(dataset) for dataset in datasets]
+    df  = pd.concat(df)
+    
     X   = df[["peak area", "peak curvature", "peak V", "vcenter", "PH", "signal_mean", "signal_std", \
                                 "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
     y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))

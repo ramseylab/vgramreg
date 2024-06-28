@@ -1,3 +1,5 @@
+DATASET_PATH = '/Users/sangam/Desktop/Epilepsey/Code/Signal_Analysis/Dataset/ML1_ML2'
+
 name_conversion = {'Linear':'multivariate', 'std':'univariate, std(S)', 'mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
                     'peak height':'univariate, max(S)', 'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
