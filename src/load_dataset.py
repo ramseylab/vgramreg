@@ -4,9 +4,11 @@ from glob import glob
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
+from typing import Tuple
+
 from src.config import DATASET_PATH
 
-def find_concentration_distribution(y):
+def find_concentration_distribution(y: pd.Series) -> int:
     all_labels = y.tolist()
     unique_    = set(all_labels)
     count = {}
@@ -14,7 +16,7 @@ def find_concentration_distribution(y):
     
     return count
 
-def load_dataset():
+def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     
     datasets = sorted([f"{i}/extracted_features.xlsx" for i in glob(f'{DATASET_PATH}/*')])
    

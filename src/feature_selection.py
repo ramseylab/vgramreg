@@ -6,13 +6,16 @@ import pickle
 from sklearn.base import clone
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.base import BaseEstimator
+from sklearn.model_selection import KFold
 
 from typing import Tuple
+
 
 from src.load_models import select_model
 
 class ModelSelection():
-    def __init__(self, model_name, X_train, y_train):
+    def __init__(self, model_name:str, X_train:pd.DataFrame, y_train:pd.Series):
         self.X_train, self.y_train = X_train, y_train
         self.model = select_model(model_name)
         self.all_feature_scores = []
@@ -20,22 +23,22 @@ class ModelSelection():
         model_yLOD = LinearRegression()
         model_yLOD.fit(self.X_train[['univariate, std(S)']], self.y_train) # Selecting standard deviation of sample as a feature
       
-        S  = model_yLOD.coef_[0]                          # Slope
+        S  = model_yLOD.coef_[0]                                           # Slope of fitting line y=Sx + c 
         SD = self.X_train['univariate, std(S)'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
     
         self.y_LOD = 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
     
-    def save(self, path):
+    def save(self, path:str) -> None:
         with open(path, 'wb') as f:
             pickle.dump(self.model, path) 
 
-    def find_score(self, kf, features):
+    def find_score(self, kf:KFold, features:list) -> np.ndarray:
         return np.array(self.calculate_r2_score(self.model, self.X_train[features], self.y_train, kf))
     
     def find_per_diff(self, kf, features):
         return np.array(self.calculate_per_diff(self.model, self.X_train[features], self.y_train, kf))
     
-    def calculate_per_diff(self, model, X, y, kf):
+    def calculate_per_diff(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold):
         per_diff_all = []
         
         for train_index, test_index in kf.split(X):
@@ -71,7 +74,7 @@ class ModelSelection():
         
         return np.array(per_diff_all) 
 
-    def calculate_r2_score(self, model, X, y, kf):
+    def calculate_r2_score(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
         scores = []
 
         for train_index, test_index in kf.split(X):
@@ -92,10 +95,10 @@ class ModelSelection():
 
         return np.array(scores) 
     
-    def fit(self, features):
+    def fit(self, features:list) -> None:
         self.model.fit(self.X_train[features], self.y_train)
 
-    def find_best_features(self, kf, r2_score):
+    def find_best_features(self, kf:KFold, r2_score:float) -> list:
         model = clone(self.model)
         all_features      = self.X_train.columns.values
         self.selected_features = []

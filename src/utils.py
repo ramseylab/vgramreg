@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
 
-def per_error(y_test, y_pred, y_LOD):
+def per_error(y_test:pd.Series, y_pred:np.array, y_LOD:float)->float:
+   
     mask           = (y_test != 0)    # Non Zero Concentration
     zero_mask      = ~(mask)          # Zero Concentration
 

@@ -7,7 +7,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 
 from sklearn import svm
-from sklearn.model_selection import train_test_split
+from sklearn.base import BaseEstimator
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
@@ -16,7 +16,7 @@ from sklearn.linear_model import Lasso
 import pandas as pd
 import numpy as np
 
-def select_model(model_name, C_value=1):
+def select_model(model_name:str, C_value=1) -> BaseEstimator:
     if model_name == 'DT':
         return  DecisionTreeRegressor()
     

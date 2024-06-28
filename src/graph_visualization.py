@@ -3,18 +3,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-def pad_values(feature_, scores, max_val):
+from typing import Tuple
+
+def pad_values(feature_:list, scores:list, max_val:int) -> Tuple[list, list]:
     pad_value = max_val - len(feature_)
     feature_  = feature_ + ['']*pad_value
     scores    = scores   + [0]*pad_value
 
     return feature_, scores
 
-def feature_selection_tabularize(feature_scores):
+def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
 
     ind_header_name = {1:'Univariate Features', 2:'Bivariate Features', 3:'Trivariate Features', 4:'Quad', 5:'Quin', \
                       6: 'Hexvariate Features', 7:'Heptavariate Features', 8:'Octavaraite Features'}
-    dict_ = {}
+    
     num_features = len(feature_scores[0])
     df = pd.DataFrame()
         
@@ -30,7 +32,13 @@ def feature_selection_tabularize(feature_scores):
 
     return df
 
-def visualize_highest_score_feature_selection(all_dataset_feature_score, path_name, model_name_conversion, r2_score=True, only_one_multivariate=True, legends=False, extra_symbol=None):
+def visualize_highest_score_feature_selection(all_dataset_feature_score: dict, 
+                                              path_name:str, 
+                                              model_name_conversion: dict, 
+                                              r2_score=True, 
+                                              only_one_multivariate=True, 
+                                              legends=False, 
+                                              extra_symbol=None) -> pd.DataFrame:
 
     os.makedirs(os.path.dirname(path_name), exist_ok=True)
     plt.figure(figsize=(35, 15))
@@ -134,7 +142,11 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score, path_na
 
     return df
 
-def visualization_testing_dataset(dict_, path_name, r2_score=True, only_one_multivariate=True,legends=False):
+def visualization_testing_dataset(dict_:dict, 
+                                  path_name:str, 
+                                  r2_score=True, 
+                                  only_one_multivariate=True,
+                                  legends=False) -> None:
     fontsize = 14
         
     df = pd.DataFrame.from_dict(dict_)
