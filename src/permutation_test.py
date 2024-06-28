@@ -51,14 +51,14 @@ def pair_permutation_test(model1_pred: np.array,
 def find_paired_permutation_test(dataset:Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series],
                                 models_features_per: dict) -> pd.DataFrame:
     """
-        Calculates Statistical Significance level p-value for the all given pairs
+        Calculates Statistical Significance level p-value for all the given pairs
     """
 
     df      = pd.DataFrame(columns=['Model Comparison', 'Observed Diff', 'Diff mean', 'Diff std', 'p value'])
     (X_train, X_test, y_train, y_test) = dataset
 
     for model1_name, model2_name in paired_test: 
-        #
+        # Load Models
         model1  = ModelSelection(model1_name, X_train, y_train)
         model2  = ModelSelection(model2_name, X_train, y_train)
 

@@ -123,6 +123,7 @@ if __name__ == '__main__':
         df = feature_selection_tabularize(feature_selection_per_diff[model])
         df.to_excel(f'Outputs/feature_selection_list/feature_selection_per_error_{model}.xlsx', index=False)
 
+    # Comparision between the Models
     for only_one_multivariate in [True, False]:
         comparision_model = 'uni_multivariate' if only_one_multivariate else 'linear_nonlinear'
 

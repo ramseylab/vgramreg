@@ -11,7 +11,6 @@ from sklearn.model_selection import train_test_split
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-import xgboost as xgb
 from sklearn.linear_model import Lasso
 
 import pandas as pd
@@ -33,9 +32,6 @@ def select_model(model_name, C_value=1):
     elif model_name=='GP':
         kernel = RBF(length_scale=1.0) 
         return GaussianProcessRegressor(kernel=kernel, alpha=1.5)
-    
-    elif model_name=='XGB':
-        return xgb.XGBRegressor()
 
     elif ('Linear' in model_name) or ('univariate' in model_name) or ('multivariate' in model_name) :
         return LinearRegression()

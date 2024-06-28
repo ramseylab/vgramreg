@@ -5,7 +5,6 @@ def per_error(y_test, y_pred, y_LOD):
     zero_mask      = ~(mask)          # Zero Concentration
 
     y_pred         = np.maximum(y_pred, 0.0)
-    # y_LOD          = 1.6193237802284837
 
     # Only for non zero concentration
     non_zero_per_error = np.abs(y_test[mask] - y_pred[mask])/(0.5*(y_test[mask] + y_pred[mask]))

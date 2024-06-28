@@ -1,13 +1,13 @@
-import os
-import math
+
 import pandas as pd
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
 
 from sklearn.base import clone
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
+
+from typing import Tuple
 
 from src.load_models import select_model
 
@@ -160,7 +160,8 @@ class ModelSelection():
 
         return self.all_feature_scores
     
-    def find_testing_score(self, X_test, y_test):
+    def find_testing_score(self, X_test: pd.DataFrame, y_test: pd.DataFrame) -> Tuple[list, list]:
+
         # Fit the model with selected features
         self.model.fit(self.X_train[self.selected_features], self.y_train)
 
