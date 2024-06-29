@@ -18,9 +18,8 @@ def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
                       6: 'Hexvariate Features', 7:'Heptavariate Features', 8:'Octavaraite Features'}
     
     num_features = len(feature_scores[0])
-    df = pd.DataFrame()
+    df           = pd.DataFrame()
         
-    
     for ind, all_feature in enumerate(feature_scores):
         
         feature_, scores   = pad_values(list(all_feature.keys()), list(all_feature.values()), num_features)
@@ -54,8 +53,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
     for dataset_name in all_dataset_feature_score:
         best_score       = 0.0 if r2_score else 100.0
         selected_feature = None
-
-        fontsize = 14
+        fontsize         = 14
         
         for ind, all_feature in enumerate(all_dataset_feature_score[dataset_name]):
             feature_   = list(all_feature.keys())
@@ -68,7 +66,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
             if r2_score:
                 if score > best_score:
                     selected_feature = feature_[ind_]
-                    best_score = score
+                    best_score       = score
             else:
                  if score < best_score:
                     selected_feature = feature_[ind_]
@@ -83,6 +81,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
                     dict_['features'].append(feature_[i])
 
         dataset_name = model_name_conversion[dataset_name]
+
         if only_one_multivariate==True: dataset_name = 'multivariate'
             
         dict_['Models'].append(dataset_name)
@@ -90,6 +89,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
         dict_['features'].append(selected_feature)
 
     df = pd.DataFrame.from_dict(dict_)
+
     if not(r2_score): df = df.sort_values(by='Scores')
     else: df = df.sort_values(by='Scores', ascending=False)
         
@@ -103,13 +103,13 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
                  'Random Forest': '^',\
                  'Gaussian Process': 'v',\
                  'Linear': 'x'}
+    
     decimal_prec = 3 if r2_score else 1
 
     for i, p in enumerate(ax.patches):
         ax.annotate(str(round(p.get_height(), decimal_prec)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
             ha='center', va='center', xytext=(0, 10), textcoords='offset points',  rotation='vertical', fontsize=fontsize)
 
-        # if legends or r2_score:
         color = 'red' if i == 0 else 'black' 
         ax.plot(p.get_x() + p.get_width() / 2, p.get_height(), marker=symbols[df['Models'].to_list()[i]], \
                 color=color, markersize=10)
@@ -117,21 +117,21 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
     if extra_symbol != None:
         ax.plot(-1, -1, marker=extra_symbol,color=color, markersize=10)
     
-    title  = f'R2_Score' if r2_score else 'Percent Error (%)'
     ylabel = r'$R^2$' if r2_score else 'Error (%)'
 
-    # Set 
+    # Set y limit for R2 and percent error
     set_y_lim = 1.0 if r2_score else 70.0
     plt.ylim(top=set_y_lim)
     plt.ylabel(ylabel, fontsize=fontsize+2)
     plt.xlabel('')
+
     if r2_score: 
         ax.set_xticklabels([])
         plt.xlabel('Features', fontsize=14)
     
     if legends:
-          
         leg = plt.legend(df['Models'].values.tolist(), loc='upper left', bbox_to_anchor=(1, 1), fontsize=14)
+
         for line in leg.get_lines():
             line.set_color('black')
         
@@ -148,8 +148,8 @@ def visualization_testing_dataset(dict_:dict,
                                   only_one_multivariate=True,
                                   legends=False) -> None:
     fontsize = 14
-        
-    df = pd.DataFrame.from_dict(dict_)
+    df       = pd.DataFrame.from_dict(dict_)
+
     if not(r2_score): df = df.sort_values(by='Scores')
     else: df = df.sort_values(by='Scores', ascending=False)
         
@@ -165,6 +165,7 @@ def visualization_testing_dataset(dict_:dict,
                  'Gaussian Process': 'v',\
                  'GP': 'v',\
                  'Linear': 'x'}
+    
     decimal_prec = 3 if r2_score else 1
 
     for i, p in enumerate(ax.patches):
@@ -177,27 +178,26 @@ def visualization_testing_dataset(dict_:dict,
             ax.plot(p.get_x() + p.get_width() / 2, p.get_height(), marker=symbols[df['Models'].to_list()[i]], \
                     color=color, markersize=10)
 
-    title  = f'R2_Score' if r2_score else 'Percent Error (%)'
-    ylabel = r'$R^2$' if r2_score else 'Error (%)'
-
+    ylabel    = r'$R^2$' if r2_score else 'Error (%)'
     set_y_lim = 1.0 if r2_score else 70.0
     
     plt.ylim(top=set_y_lim)
-    
     plt.ylabel(ylabel, fontsize=fontsize+2)
     plt.xlabel('')
     ax.set_xticklabels([])
+
     if r2_score: 
         ax.set_xticklabels([])
         plt.xlabel('Features', fontsize=14)
     
     if legends:
         leg = plt.legend(df['Models'].values, loc='upper left', bbox_to_anchor=(1, 1), fontsize=14)
+
         for line in leg.get_lines():
             line.set_color('black')
+
         ax.set_xticklabels([])
         plt.xlabel('Features', fontsize=14)
-        
         
     plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
     plt.clf()

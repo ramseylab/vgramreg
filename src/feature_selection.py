@@ -11,7 +11,6 @@ from sklearn.model_selection import KFold
 
 from typing import Tuple
 
-
 from src.load_models import select_model
 
 class ModelSelection():
@@ -21,9 +20,9 @@ class ModelSelection():
         self.all_feature_scores = []
 
         model_yLOD = LinearRegression()
-        model_yLOD.fit(self.X_train[['univariate, std(S)']], self.y_train) # Selecting standard deviation of sample as a feature
+        model_yLOD.fit(self.X_train[['univariate, std(S)']], self.y_train)          # Selecting standard deviation of sample as a feature
       
-        S  = model_yLOD.coef_[0]                                           # Slope of fitting line y=Sx + c 
+        S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
         SD = self.X_train['univariate, std(S)'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
     
         self.y_LOD = 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
@@ -35,10 +34,10 @@ class ModelSelection():
     def find_score(self, kf:KFold, features:list) -> np.ndarray:
         return np.array(self.calculate_r2_score(self.model, self.X_train[features], self.y_train, kf))
     
-    def find_per_diff(self, kf, features):
+    def find_per_diff(self, kf:KFold, features:list) -> np.ndarray:
         return np.array(self.calculate_per_diff(self.model, self.X_train[features], self.y_train, kf))
     
-    def calculate_per_diff(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold):
+    def calculate_per_diff(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
         per_diff_all = []
         
         for train_index, test_index in kf.split(X):
@@ -100,7 +99,8 @@ class ModelSelection():
 
     def find_best_features(self, kf:KFold, r2_score:float) -> list:
         model = clone(self.model)
-        all_features      = self.X_train.columns.values
+
+        all_features           = self.X_train.columns.values
         self.selected_features = []
         self.all_feature_scores = []
 
