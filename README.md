@@ -46,7 +46,7 @@ Open Config file src/config.py
 ```bash
     python src/generate_dataset.py
 ```
-This code creates three.xlsx files in the respective folders (2024_02_19_ML1 and 2024_02_22_ML2). We will use only one file named extracted_features.xlsx.
+This code creates three `.xlsx` files in the respective folders (2024_02_19_ML1 and 2024_02_22_ML2). We will use only one file named extracted_features.xlsx.
 
 ```bash
 ML1_ML2
