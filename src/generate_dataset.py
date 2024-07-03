@@ -12,7 +12,7 @@ from glob import glob
 from typing import Tuple
 
 from vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
-from config import DATASET_PATH
+from config import DATASET_PATH, OUTPUT_PATH
 
 def find_first_derivative_peaks(V: np.ndarray, Signal: np.ndarray):
   
@@ -242,6 +242,7 @@ def run_vg2(folderpath: str,
         dfxl.to_excel(dataframe_str, index=False, header=["conc", "replicate", "V", "I", "smoothed", "detilted"])
     
     return vg_dict, data_str
+                           
 
 if __name__ == '__main__':
     all_dataset = glob(f"{DATASET_PATH}/*")

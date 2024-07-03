@@ -4,9 +4,12 @@ from glob import glob
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from typing import Tuple
 
-from src.config import DATASET_PATH
+from src.config import DATASET_PATH, OUTPUT_PATH
 
 def find_concentration_distribution(y: pd.Series) -> int:
     all_labels = y.tolist()
@@ -15,6 +18,17 @@ def find_concentration_distribution(y: pd.Series) -> int:
     for i in unique_: count[i] = all_labels.count(i)
     
     return count
+def create_correlation_matrix(X_normalized:pd.DataFrame) -> None:
+
+    # Calculate the correlation matrix
+    correlation_matrix = X_normalized.corr()
+
+    # Plot the correlation matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title('Correlation Matrix')
+    plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
+     
 
 def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     
@@ -47,6 +61,9 @@ def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
 
     # Convert the numpy array back to a DataFrame
     X_normalized = pd.DataFrame(X_normalized, columns=X.columns)
+
+    # Generate Feature Correlation Confusion Matrix 
+    create_correlation_matrix(X_normalized)
 
     # Split the total dataset into training (70%) and testing (30%) dataset
     X_train, X_test, y_train, y_test  = train_test_split(X_normalized, y, test_size=0.4, shuffle=True, random_state=20, stratify=y)

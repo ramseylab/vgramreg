@@ -1,4 +1,5 @@
 DATASET_PATH = '/Users/sangam/Desktop/Epilepsey/Code/vgramreg/ML1_ML2'
+OUTPUT_PATH  = 'Outputs'
 
 name_conversion = {'Linear':'multivariate', 'std':'univariate, std(S)', 'mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
