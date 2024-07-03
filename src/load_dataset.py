@@ -62,7 +62,7 @@ def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     # Convert the numpy array back to a DataFrame
     X_normalized = pd.DataFrame(X_normalized, columns=X.columns)
 
-    # Generate Feature Correlation Confusion Matrix 
+    # Generate Feature Correlation heat map
     create_correlation_matrix(X_normalized)
 
     # Split the total dataset into training (70%) and testing (30%) dataset
