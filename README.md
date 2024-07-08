@@ -6,7 +6,7 @@ analyzing electrochemical signals for drug monitoring"**
 
 ## Prerequisites
 -   Python 3.8 or later
--   Anaconda or Miniconda
+-   Anaconda or Miniconda (optional, can use a python virtualenv instead)
 
 ## Installation
 
