@@ -10,11 +10,22 @@ analyzing electrochemical signals for drug monitoring"**
 
 ## Installation
 
-### 1.  Create a Conda Environent
+### 1.  Create a Python3.9 Environent
+
+This can be done using Conda or a python virtualenv.
+
+#### Using Conda:
 ```bash 
 conda create -n vgramreg python=3.9
 conda activate vgramreg
 ```
+
+#### Using a python virtualenv:
+```bash
+python3.9 -m venv venv
+source venv/bin/activate
+```
+
 ### 2.  Install Dependencies
 ```bash
 pip install -r requirements.txt
