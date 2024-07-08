@@ -35,7 +35,7 @@ pip install -r requirements.txt
 ```bash
     wget ...
 ```
-Extract the file and store the dataset in the root directory
+Extract the file and store the dataset in the `vgramreg` project root directory as shown below:
 ```bash
 .
 ├── ML1_ML2
@@ -49,15 +49,19 @@ Extract the file and store the dataset in the root directory
 
 
 ## Generate Dataset
-Open Config file src/config.py
+In a text editor, open the connfiguration file `src/config.py`, and change
+`DATASET_PATH` so that it is set to the full absolute path location to the `ML1_ML2` 
+folder, e.g.:
 ```bash
-    DATASET_PATH = '<full path locationo to ML1_ML2 dataset>'
     DATASET_PATH = '/Users/abc/Desktop/Epilepsey/Code/vgramreg/ML1_ML2'
 ```
+Save and exit your editor. Then, in a bash session where your current working
+directory is in the `vgramreg` project root directory, generate Excel spreadsheets of the raw voltammogram files 
+by running the `generate_dataset.py` script:
 ```bash
     python src/generate_dataset.py
 ```
-This code creates three `.xlsx` files in the respective folders (2024_02_19_ML1 and 2024_02_22_ML2). We will use only one file named extracted_features.xlsx.
+This code creates three `.xlsx` files in the respective folders (2024_02_19_ML1 and 2024_02_22_ML2). We will use only one file named `extracted_features.xlsx`.
 
 ```bash
 ML1_ML2
