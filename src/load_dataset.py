@@ -18,14 +18,17 @@ def find_concentration_distribution(y: pd.Series) -> int:
     for i in unique_: count[i] = all_labels.count(i)
     
     return count
-def create_correlation_matrix(X_normalized:pd.DataFrame) -> None:
+def create_correlation_matrix(X_correl:pd.DataFrame) -> None:
+
+    # Remove the univariate from the column name
+    X_correl.columns = [name.replace('univariate, ', '') for name in X_correl.columns.to_list()]
 
     # Calculate the correlation matrix
-    correlation_matrix = X_normalized.corr()
+    correlation_matrix = X_correl.corr()
 
     # Plot the correlation matrix
     plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
     plt.title('Correlation Matrix')
     plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
      
@@ -63,7 +66,7 @@ def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     X_normalized = pd.DataFrame(X_normalized, columns=X.columns)
 
     # Generate Feature Correlation heat map
-    create_correlation_matrix(X_normalized)
+    create_correlation_matrix(X_normalized.copy())
 
     # Split the total dataset into training (70%) and testing (30%) dataset
     X_train, X_test, y_train, y_test  = train_test_split(X_normalized, y, test_size=0.4, shuffle=True, random_state=20, stratify=y)
