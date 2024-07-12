@@ -15,7 +15,7 @@ def pad_values(feature_:list, scores:list, max_val:int) -> Tuple[list, list]:
 def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
 
     ind_header_name = {1:'Univariate Features', 2:'Bivariate Features', 3:'Trivariate Features', 4:'Quad', 5:'Quin', \
-                      6: 'Hexvariate Features', 7:'Heptavariate Features', 8:'Octavaraite Features'}
+                      6: 'Hexvariate Features', 7:'Heptavariate Features', 8:'Octavaraite Features', 9:'novemvariate Features', 10:"Ten", 11:''}
     
     num_features = len(feature_scores[0])
     df           = pd.DataFrame()
