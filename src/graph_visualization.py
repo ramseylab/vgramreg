@@ -23,7 +23,7 @@ def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
     for ind, all_feature in enumerate(feature_scores):
         
         feature_, scores   = pad_values(list(all_feature.keys()), list(all_feature.values()), num_features)
-        scores             = [round(i, 4) for i in scores]
+        scores             = [round(float(i[0]), 4) if (type(i)==np.ndarray)  else round(float(i), 4) for i in scores]
 
         
         df[ind_header_name[ind + 1]]  = feature_
@@ -35,6 +35,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
                                               path_name:str, 
                                               model_name_conversion: dict, 
                                               r2_score=True, 
+                                              adj_score=False,
                                               only_one_multivariate=True, 
                                               legends=False, 
                                               extra_symbol=None) -> pd.DataFrame:
@@ -57,7 +58,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
         
         for ind, all_feature in enumerate(all_dataset_feature_score[dataset_name]):
             feature_   = list(all_feature.keys())
-            scores     = list(all_feature.values())
+            scores     = [i[1 if adj_score else 0] if (type(i)==np.ndarray) else i for i in list(all_feature.values())]
 
             if r2_score: score, ind_  = np.max(scores), np.argmax(scores)
             else: score, ind_  = np.min(scores), np.argmin(scores)
@@ -136,6 +137,9 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
             line.set_color('black')
         
     ax.set_xticklabels([])
+
+    if (r2_score and adj_score):  path_name = path_name.split('.')[0]+"_Adj.png"
+
     plt.xlabel('Features', fontsize=14)
     plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
     plt.clf()
@@ -145,14 +149,16 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 def visualization_testing_dataset(dict_:dict, 
                                   path_name:str, 
                                   r2_score=True, 
-                                  only_one_multivariate=True,
+                                  adj_score = False,
                                   legends=False) -> None:
     fontsize = 14
     df       = pd.DataFrame.from_dict(dict_)
 
     if not(r2_score): df = df.sort_values(by='Scores')
-    else: df = df.sort_values(by='Scores', ascending=False)
-        
+    else: 
+        df['Scores'] = df['Scores'].apply(lambda x: x[1]) if adj_score else df['Scores'].apply(lambda x: x[0])
+        df = df.sort_values(by='Scores', ascending=False)
+
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
     symbols      = {'multivariate':'o', 'univariate, std(S)':'^', 'univariate, mean(S)':'x',\
@@ -172,7 +178,6 @@ def visualization_testing_dataset(dict_:dict,
         ax.annotate(str(round(p.get_height(), decimal_prec)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
             ha='center', va='center', xytext=(0, 10), textcoords='offset points',  rotation='vertical', fontsize=fontsize)
 
-        # print()
         if legends or r2_score:
             color = 'red' if i == 0 else 'black' 
             ax.plot(p.get_x() + p.get_width() / 2, p.get_height(), marker=symbols[df['Models'].to_list()[i]], \
@@ -199,5 +204,7 @@ def visualization_testing_dataset(dict_:dict,
         ax.set_xticklabels([])
         plt.xlabel('Features', fontsize=14)
         
+    if (r2_score and adj_score):  path_name = path_name.split('.')[0]+"_Adj.png"  
+    
     plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
     plt.clf()

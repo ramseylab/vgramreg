@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+def find_adj_score(N: int, P: int, R_2: float) -> float:
+    return (1 - (1 - R_2)*(N - 1)/(N - P - 1))
+
 def per_error(y_test:pd.Series, y_pred:np.array, y_LOD:float)->float:
    
     mask           = (y_test != 0)    # Non Zero Concentration
