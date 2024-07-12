@@ -15,6 +15,7 @@ from src.utils import per_error
 from src.permutation_test import find_paired_permutation_test
 from src.feature_selection import ModelSelection
 from src.load_dataset import load_dataset
+from src.utils import find_adj_score
 
 # Ignore all warnings
 warnings.filterwarnings('ignore')
@@ -73,14 +74,16 @@ def find_performance_metric(model_names: list, r2_top:pd.DataFrame) -> Tuple[dic
         y_pred_per = model_per.model.predict(X_test[models_features_per[model_name]])
 
         model_per_error      = per_error(y_test, y_pred_per, model_per.y_LOD)
-        model_r2_scores      = r2_score(y_test, y_pred_r2)
+        model_r2_score       = r2_score(y_test, y_pred_r2)
+        model_r2_adj         = find_adj_score(len(y_test), len(models_features_r2[model_name]), model_r2_score)  # Numer of testing dataset, number of features, R2
 
         model_name = 'multivariate' if ((model_name == 'Linear') and only_one_multivariate) else model_name
 
         r2_scores['Models'].append(model_name) 
         per_errors['Models'].append(model_name)
         
-        r2_scores['Scores'].append(model_r2_scores)
+        
+        r2_scores['Scores'].append((model_r2_score, model_r2_adj))
         per_errors['Scores'].append(model_per_error)
 
     return r2_scores, per_errors
@@ -94,6 +97,7 @@ if __name__ == '__main__':
     # Configuration for Visualization
     legends               = True
     only_one_multivariate = True 
+    adj_score             = False    # To display adjusted R2 Score in the bar chart
 
     # path to save outputs
     output_path_feature_list = f'{OUTPUT_PATH}/feature_selection_list'
@@ -123,15 +127,15 @@ if __name__ == '__main__':
         comparision_model = 'uni_multivariate' if only_one_multivariate else 'linear_nonlinear'
 
         # Plot the R2 score and Percent Error in the Bar chart on 5-fold cross-validation training dataset
-        r2_top = visualize_highest_score_feature_selection(feature_selection_r2score, f"{OUTPUT_PATH}/{comparision_model}_5_fold_r2score.png",    model_name_conversion, only_one_multivariate=only_one_multivariate, legends=False)
+        r2_top = visualize_highest_score_feature_selection(feature_selection_r2score, f"{OUTPUT_PATH}/{comparision_model}_5_fold_r2score.png",    model_name_conversion, only_one_multivariate=only_one_multivariate, legends=True, adj_score=adj_score)
         visualize_highest_score_feature_selection(feature_selection_per_diff, f"{OUTPUT_PATH}/{comparision_model}_5_fold_per_error.png", model_name_conversion, r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
 
         # Calculate R2 Score and Percent Error on Testing Dataset
         test_r2_scores, test_per_errors = find_performance_metric(model_names, r2_top)
 
         # Plot the R2 score and Percent Error in the Bar chart
-        visualization_testing_dataset(test_r2_scores,  f'{OUTPUT_PATH}/{comparision_model}_testing_r2_score.png',  r2_score=True,  only_one_multivariate=only_one_multivariate, legends=False)
-        visualization_testing_dataset(test_per_errors, f'{OUTPUT_PATH}/{comparision_model}_testing_per_error.png', r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
+        visualization_testing_dataset(test_r2_scores,  f'{OUTPUT_PATH}/{comparision_model}_testing_r2_score.png',  r2_score=True,  adj_score=adj_score, legends=True)
+        visualization_testing_dataset(test_per_errors, f'{OUTPUT_PATH}/{comparision_model}_testing_per_error.png', r2_score=False, legends=True)
 
     print("########Paired Permutation Test##############")
     print(permutation_test)
