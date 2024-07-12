@@ -74,8 +74,9 @@ class ModelSelection():
         return np.array(per_diff_all) 
 
     def calculate_r2_score(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
-        scores = []
-
+        scores   = []
+        all_pred, all_gt = [], []
+        
         for train_index, test_index in kf.split(X):
             model_ = clone(model)
             
@@ -88,11 +89,14 @@ class ModelSelection():
             y_pred         = model_.predict(X_test)
             y_pred         = np.maximum(y_pred, 0.0)
 
-            score       = r2_score(y_test, y_pred)
+            all_pred       += y_pred.tolist()
+            all_gt         += y_test.tolist()
+            # score       = r2_score(y_test, y_pred)
 
-            scores.append(score)
+            # scores.append(score)
+        score       = r2_score(all_pred, all_gt)
 
-        return np.array(scores) 
+        return np.array(score) 
     
     def fit(self, features:list) -> None:
         self.model.fit(self.X_train[features], self.y_train)
