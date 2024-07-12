@@ -134,8 +134,8 @@ if __name__ == '__main__':
         test_r2_scores, test_per_errors = find_performance_metric(model_names, r2_top)
 
         # Plot the R2 score and Percent Error in the Bar chart
-        visualization_testing_dataset(test_r2_scores,  f'{OUTPUT_PATH}/{comparision_model}_testing_r2_score.png',  r2_score=True,  adj_score=adj_score, legends=True)
-        visualization_testing_dataset(test_per_errors, f'{OUTPUT_PATH}/{comparision_model}_testing_per_error.png', r2_score=False, legends=True)
+        visualization_testing_dataset(test_r2_scores,  f'{OUTPUT_PATH}/{comparision_model}_testing_r2_score.png',  model_name_conversion, only_one_multivariate, r2_score=True,  adj_score=adj_score, legends=True)
+        visualization_testing_dataset(test_per_errors, f'{OUTPUT_PATH}/{comparision_model}_testing_per_error.png', model_name_conversion, only_one_multivariate, r2_score=False, legends=True)
 
     print("########Paired Permutation Test##############")
     print(permutation_test)

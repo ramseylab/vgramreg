@@ -93,7 +93,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 
     if not(r2_score): df = df.sort_values(by='Scores')
     else: df = df.sort_values(by='Scores', ascending=False)
-        
+
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
     symbols      = {'multivariate':'o', 'univariate, std(S)':'^', 'univariate, mean(S)':'x',\
@@ -148,6 +148,8 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 
 def visualization_testing_dataset(dict_:dict, 
                                   path_name:str, 
+                                  model_name_conversion:dict,
+                                  only_one_multivariate=True,
                                   r2_score=True, 
                                   adj_score = False,
                                   legends=False) -> None:
@@ -159,6 +161,7 @@ def visualization_testing_dataset(dict_:dict,
         df['Scores'] = df['Scores'].apply(lambda x: x[1]) if adj_score else df['Scores'].apply(lambda x: x[0])
         df = df.sort_values(by='Scores', ascending=False)
 
+    if not (only_one_multivariate): df['Models'] = df['Models'].apply(lambda x: model_name_conversion[x])
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
     symbols      = {'multivariate':'o', 'univariate, std(S)':'^', 'univariate, mean(S)':'x',\
@@ -205,6 +208,6 @@ def visualization_testing_dataset(dict_:dict,
         plt.xlabel('Features', fontsize=14)
         
     if (r2_score and adj_score):  path_name = path_name.split('.')[0]+"_Adj.png"  
-    
+
     plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
     plt.clf()

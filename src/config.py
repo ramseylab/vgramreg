@@ -12,7 +12,7 @@ reverse_name_conversion = {}
 for i in name_conversion:
     reverse_name_conversion[name_conversion[i]] = i
     
-model_name_conversion = {'Linear':'Linear', 'KNN':'KNN', 'RF':'Random Forest', 'GP':'Gaussian Process'}
+model_name_conversion = {'Linear':'Linear', 'KNN':'KNN', 'RF':'Random Forest', 'GP':'Gaussian Process', 'multivariate':'multivariate'}
 
 models_features_r2 = {
                       'univariate, mean(S)': ['univariate, mean(S)'], \
