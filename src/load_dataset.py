@@ -47,7 +47,7 @@ def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
                     'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
-                    'peak V':'univariate, V_at_max(S)', 'dS_dV_max_V':'univariate, V_at_max(dS/dV)', 'dS_dV_min_V':'univariate, V_at_min(dS/dV)',\
+                    'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
         }, inplace = True)
 
     # Initialize the StandardScaler
