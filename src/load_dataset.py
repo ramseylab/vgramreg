@@ -1,7 +1,8 @@
+import os
 import pandas as pd
 from glob import glob
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 import matplotlib.pyplot as plt
@@ -30,12 +31,14 @@ def create_correlation_matrix(X_correl:pd.DataFrame) -> None:
     plt.figure(figsize=(10, 8))
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
     plt.title('Correlation Matrix')
+    os.makedirs(OUTPUT_PATH, exist_ok=True)
     plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
      
 
-def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-    
-    datasets = sorted([f"{i}/extracted_features.xlsx" for i in glob(f'{DATASET_PATH}/*')])
+def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='min_max') -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    if dataset_path==None: dataset_path = DATASET_PATH
+
+    datasets = sorted([f"{i}/extracted_features.xlsx" for i in glob(f'{dataset_path}/*')])
    
     df  = [pd.read_excel(dataset) for dataset in datasets]
     df  = pd.concat(df)
@@ -50,29 +53,38 @@ def load_dataset() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
                     'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
         }, inplace = True)
 
-    # Initialize the StandardScaler
-    scaler = StandardScaler()
 
-    # Fit the scaler to your data
-    scaler.fit(X)
+    # Split the total dataset into training (60%) and testing (40%) dataset
+    X_train, X_test, y_train, y_test  = train_test_split(X, y, test_size=0.4, shuffle=True, random_state=20, stratify=y)
 
-    # Transform the data
-    X_normalized = scaler.transform(X)
-    
-    # Transform the data
-    X_normalized = scaler.transform(X)
+    scaler = None
+    if normalization:
+        # Initialize the StandardScaler
+        scaler = StandardScaler() if standardize_type == 'mean_std' else MinMaxScaler()
 
-    # Convert the numpy array back to a DataFrame
-    X_normalized = pd.DataFrame(X_normalized, columns=X.columns)
+        # Fit the scaler to only the blank of the training dataset
+        if (normalize_blanks and standardize_type=='mean_std'): scaler.fit(X_train[y_train==0].copy())
+
+        # Fit the scaler to the training dataset
+        else: scaler.fit(X_train)
+
+        # Transform the data
+        X_train_normalize = scaler.transform(X_train)
+        
+        # Transform the data
+        X_test_normalize = scaler.transform(X_test)
+
+
+        X_train = pd.DataFrame(X_train_normalize,  columns=X.columns)
+        X_test  = pd.DataFrame(X_test_normalize,   columns=X.columns)
+
+    else:  X_train, X_test = pd.DataFrame(X_train, columns=X.columns), pd.DataFrame(X_test, columns=X.columns)
 
     # Generate Feature Correlation heat map
-    create_correlation_matrix(X_normalized.copy())
-
-    # Split the total dataset into training (70%) and testing (30%) dataset
-    X_train, X_test, y_train, y_test  = train_test_split(X_normalized, y, test_size=0.4, shuffle=True, random_state=20, stratify=y)
-
+    create_correlation_matrix(X_train.copy())
+    
     print("######Data Distribution:#########")
     print("Training", find_concentration_distribution(y_train))
     print("Testing",  find_concentration_distribution(y_test))
     print("#################################")
-    return X_train, X_test, y_train, y_test
+    return (X_train, X_test, y_train, y_test), scaler

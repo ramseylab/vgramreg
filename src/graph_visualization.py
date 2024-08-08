@@ -15,7 +15,7 @@ def pad_values(feature_:list, scores:list, max_val:int) -> Tuple[list, list]:
 def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
 
     ind_header_name = {1:'Univariate Features', 2:'Bivariate Features', 3:'Trivariate Features', 4:'Quad', 5:'Quin', \
-                      6: 'Hexvariate Features', 7:'Heptavariate Features', 8:'Octavaraite Features', 9:'novemvariate Features', 10:"Ten", 11:''}
+                      6: 'Hexvariate Features', 7:'Heptavariate Features', 8:'Octavaraite Features', 9:'novemvariate Features', 10:"Ten", 11:'',12:'', 13:''}
     
     num_features = len(feature_scores[0])
     df           = pd.DataFrame()
@@ -102,8 +102,12 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
                  'univariate, max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
-                 'Gaussian Process': 'v',\
-                 'Linear': 'x'}
+                 'Gaussian Process': 'v',
+                 'univariate, max(dS/dV)': 'v',\
+                 'Linear': 'x',
+                 'SVM':'*',
+                 'Ridge':'+',
+                 'Lasso':'s'}
     
     decimal_prec = 3 if r2_score else 1
 
@@ -161,19 +165,23 @@ def visualization_testing_dataset(dict_:dict,
         df['Scores'] = df['Scores'].apply(lambda x: x[1]) if adj_score else df['Scores'].apply(lambda x: x[0])
         df = df.sort_values(by='Scores', ascending=False)
 
-    if not (only_one_multivariate): df['Models'] = df['Models'].apply(lambda x: model_name_conversion[x])
+    if not (only_one_multivariate): df['Models'] = df['Models'].apply(lambda x: model_name_conversion[x] if (x in model_name_conversion) else x )
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
-    symbols      = {'multivariate':'o', 'univariate, std(S)':'^', 'univariate, mean(S)':'x',\
-                 'univariate, area(S)':'v', \
+    symbols      = {'multivariate':'o', 'univariate, std(S)':'1', 'univariate, mean(S)':'x',\
+                 'univariate, area(S)':'2', \
                  'univariate, area(dS/dV)':'D', \
                  'univariate, max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
                  'RF': '^',\
                  'Gaussian Process': 'v',\
+                 'univariate, max(dS/dV)': '3',\
                  'GP': 'v',\
-                 'Linear': 'x'}
+                 'Linear': 'x',
+                 'SVM':'*',
+                 'Ridge':'+',
+                 'Lasso':'s'}
     
     decimal_prec = 3 if r2_score else 1
 

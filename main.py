@@ -60,6 +60,7 @@ def find_performance_metric(model_names: list, r2_top:pd.DataFrame) -> Tuple[dic
 
     model_names = model_names if not(only_one_multivariate) else r2_top['Models'].values.tolist()
 
+    print(model_names)
     for model_name in model_names:
         
         model_name = 'Linear' if ((model_name == 'multivariate')) else model_name
@@ -90,14 +91,18 @@ def find_performance_metric(model_names: list, r2_top:pd.DataFrame) -> Tuple[dic
 
 
 if __name__ == '__main__':
+    # Find features
+    feature_selection = True
 
     # Name of Models to test
-    model_names           = ['Linear', 'KNN', 'RF', 'GP']
+    model_names           = ['Linear', 'KNN', 'RF', 'GP', 'SVM', 'Lasso', 'Ridge']
+
+    # Feature Selection
 
     # Configuration for Visualization
     legends               = True
-    only_one_multivariate = True 
-    adj_score             = False    # To display adjusted R2 Score in the bar chart
+    only_one_multivariate = False 
+    adj_score             = True    # To display adjusted R2 Score in the bar chart
 
     # path to save outputs
     output_path_feature_list = f'{OUTPUT_PATH}/feature_selection_list'
@@ -108,34 +113,46 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_dataset()
     
     # Select the best features for each performance mertrics R2 score and Percent Error
-    feature_selection_r2score, feature_selection_per_diff = select_features(X_train, y_train, model_names)
+    if feature_selection:
+        feature_selection_r2score, feature_selection_per_diff = select_features(X_train, y_train, model_names)
 
     # Perform Paired wise permutation test
     dataset = (X_train, X_test, y_train, y_test)
     permutation_test = find_paired_permutation_test(dataset, models_features_per)
    
     # Generate Excel Table showing performance metrics for each step of feature selection staring from univariate model
-    for model in model_names:
-        df = feature_selection_tabularize(feature_selection_r2score[model])
-        df.to_excel(f'{OUTPUT_PATH}/feature_selection_list/feature_selection_r2score_{model}.xlsx', index=False)
+    if feature_selection:
+        for model in model_names:
+            df = feature_selection_tabularize(feature_selection_r2score[model])
+            df.to_excel(f'{OUTPUT_PATH}/feature_selection_list/feature_selection_r2score_{model}.xlsx', index=False)
 
-        df = feature_selection_tabularize(feature_selection_per_diff[model])
-        df.to_excel(f'{OUTPUT_PATH}/feature_selection_list/feature_selection_per_error_{model}.xlsx', index=False)
+            df = feature_selection_tabularize(feature_selection_per_diff[model])
+            df.to_excel(f'{OUTPUT_PATH}/feature_selection_list/feature_selection_per_error_{model}.xlsx', index=False)
+
+    # models_to_test = [True, False] if (feature_selection) else [False]
 
     # Comparison between the models
     for only_one_multivariate in [True, False]:
         comparision_model = 'uni_multivariate' if only_one_multivariate else 'linear_nonlinear'
 
         # Plot the R2 score and Percent Error in the Bar chart on 5-fold cross-validation training dataset
-        r2_top = visualize_highest_score_feature_selection(feature_selection_r2score, f"{OUTPUT_PATH}/{comparision_model}_5_fold_r2score.png",    model_name_conversion, only_one_multivariate=only_one_multivariate, legends=True, adj_score=adj_score)
-        visualize_highest_score_feature_selection(feature_selection_per_diff, f"{OUTPUT_PATH}/{comparision_model}_5_fold_per_error.png", model_name_conversion, r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
+        if feature_selection:
+            r2_top = visualize_highest_score_feature_selection(feature_selection_r2score, f"{OUTPUT_PATH}/{comparision_model}_5_fold_r2score.png",    model_name_conversion, only_one_multivariate=only_one_multivariate, legends=True, adj_score=adj_score)
+            visualize_highest_score_feature_selection(feature_selection_per_diff, f"{OUTPUT_PATH}/{comparision_model}_5_fold_per_error.png", model_name_conversion, r2_score=False, only_one_multivariate=only_one_multivariate, legends=True)
 
+        else: 
+            r2_top = pd.DataFrame({'Models': ['multivariate', 'univariate, std(S)', 'univariate, mean(S)', 'univariate, area(S)', 'univariate, area(dS/dV)', \
+                'univariate, max(S)', \
+                'univariate, max(dS/dV)']})
+        
         # Calculate R2 Score and Percent Error on Testing Dataset
         test_r2_scores, test_per_errors = find_performance_metric(model_names, r2_top)
 
+        extend_name = '_C' if not(feature_selection) else ''
+       
         # Plot the R2 score and Percent Error in the Bar chart
-        visualization_testing_dataset(test_r2_scores,  f'{OUTPUT_PATH}/{comparision_model}_testing_r2_score.png',  model_name_conversion, only_one_multivariate, r2_score=True,  adj_score=adj_score, legends=True)
-        visualization_testing_dataset(test_per_errors, f'{OUTPUT_PATH}/{comparision_model}_testing_per_error.png', model_name_conversion, only_one_multivariate, r2_score=False, legends=True)
+        visualization_testing_dataset(test_r2_scores,  f"{OUTPUT_PATH}/{comparision_model}_testing_r2_score{extend_name}.png",  model_name_conversion, only_one_multivariate, r2_score=True,  adj_score=adj_score, legends=True)
+        visualization_testing_dataset(test_per_errors, f"{OUTPUT_PATH}/{comparision_model}_testing_per_error{extend_name}.png", model_name_conversion, only_one_multivariate, r2_score=False, legends=True)
 
     print("########Paired Permutation Test##############")
     print(permutation_test)

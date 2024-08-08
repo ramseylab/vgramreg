@@ -12,22 +12,16 @@ from sklearn.model_selection import KFold
 from typing import Tuple
 
 from src.load_models import select_model
-from src.utils import find_adj_score
+from src.utils import find_adj_score, calculate_y_LOD
 
 class ModelSelection():
     def __init__(self, model_name:str, X_train:pd.DataFrame, y_train:pd.Series):
         self.X_train, self.y_train = X_train, y_train
         self.model = select_model(model_name)
         self.all_feature_scores = []
+    
+        self.y_LOD = calculate_y_LOD(self.X_train, self.y_train) 
 
-        model_yLOD = LinearRegression()
-        model_yLOD.fit(self.X_train[['univariate, std(S)']], self.y_train)          # Selecting standard deviation of sample as a feature
-      
-        S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
-        SD = self.X_train['univariate, std(S)'][(self.y_train==0).to_numpy()].std() # Standard deviation of S blank
-    
-        self.y_LOD = 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
-    
     def save(self, path:str) -> None:
         with open(path, 'wb') as f:
             pickle.dump(self.model, path) 

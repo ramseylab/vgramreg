@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from sklearn.linear_model import LinearRegression
+
 def find_adj_score(N: int, P: int, R_2: float) -> float:
     return (1 - (1 - R_2)*(N - 1)/(N - P - 1))
 
@@ -24,3 +26,13 @@ def per_error(y_test:pd.Series, y_pred:np.array, y_LOD:float)->float:
     per_error         = np.mean(per_error) * 100
 
     return per_error
+
+def calculate_y_LOD(X_train, y_train):
+    model_yLOD = LinearRegression()
+    model_yLOD.fit(X_train[['univariate, std(S)']], y_train)          # Selecting standard deviation of sample as a feature
+    
+    S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
+    SD = X_train['univariate, std(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
+
+    return 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
+

@@ -245,7 +245,7 @@ def run_vg2(folderpath: str,
                            
 
 if __name__ == '__main__':
-    all_dataset = glob(f"{DATASET_PATH}/*")
+    all_dataset = glob(f"{DATASET_PATH}")
     
     do_log   = True
     recenter = False

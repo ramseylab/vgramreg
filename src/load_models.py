@@ -12,32 +12,38 @@ from sklearn.base import BaseEstimator
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.linear_model import Lasso
+from sklearn.linear_model import Ridge
 
 import pandas as pd
 import numpy as np
 
-def select_model(model_name:str, C_value=1) -> BaseEstimator:
+from src.config import params
+
+def select_model(model_name:str) -> BaseEstimator:
     if model_name == 'DT':
         return  DecisionTreeRegressor()
     
     elif model_name=='RF':
-        return RandomForestRegressor()
-    
+        return RandomForestRegressor(max_depth=params['RF']['max_depth'], min_samples_leaf=params['RF']['min_samples_leaf'],\
+                                     min_samples_split=params['RF']['min_samples_split'], n_estimators=params['RF']['n_estimators'])
     elif model_name=='KNN':
-        return KNeighborsRegressor()
+        return KNeighborsRegressor(metric=params['KNN']['metric'], n_neighbors=params['KNN']['n_neighbors'], weights=params['KNN']['weights'])
     
     elif 'SVM' in model_name:
-        return svm.SVR(C=C_value, kernel='linear')
+        return svm.SVR(C=params['SVM']['C'], gamma=params['SVM']['gamma'], kernel=params['SVM']['kernel'])
     
     elif model_name=='GP':
-        kernel = RBF(length_scale=1.0) 
-        return GaussianProcessRegressor(kernel=kernel, alpha=1.5)
+        return GaussianProcessRegressor(kernel=params['GP']['kernel'], alpha=params['GP']['alpha'])
 
-    elif ('Linear' in model_name) or ('univariate' in model_name) or ('multivariate' in model_name) :
+    elif ('Linear' in model_name) or ('univariate' in model_name) or ('multivariate' in model_name) or \
+        ('peak curvature' in model_name) or ('vcenter' in model_name):
         return LinearRegression()
     
     elif model_name=='Lasso':
-        return Lasso(alpha=0.1)
+        return Lasso(alpha=params['Lasso']['alpha'])
+    
+    elif model_name=='Ridge':
+        return Ridge(alpha=params['Ridge']['alpha'])
 
     
 
