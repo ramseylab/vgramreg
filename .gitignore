@@ -1,3 +1,11 @@
 Outputs/*
 ML1_ML2/*
+ML4/*
+src/__pycache__/*
 *.zip
+*.png
+*.jpg
+*.txt
+*.xlsx
+*.bin
+
