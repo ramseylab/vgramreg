@@ -67,7 +67,9 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
         if not(normalization): return X, y
         else:
             scaler = select_normalizer(standardize_type)
-            X_ = scaler.fit_transform(X)
+            scaler.fit(X[y==0]) if (normalize_blanks and (standardize_type=='mean_std')) else scaler.fit(X)
+            X_ = scaler.transform(X)
+
             return pd.DataFrame(X_, columns=X.columns), y
 
     # Split the total dataset into training (60%) and testing (40%) dataset
