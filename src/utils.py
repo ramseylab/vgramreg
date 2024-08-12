@@ -106,7 +106,7 @@ def tsen_pca_viz(data, batch_labels, labels, filename=''):
     plt.savefig(f'batch_effect/{filename}.png', dpi=300)
 
 
-def calculate_per_diff(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
+def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
     per_diff_all = []
     
     for train_index, test_index in kf.split(X):
@@ -143,7 +143,7 @@ def calculate_per_diff(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, k
     return np.array(per_diff_all).mean()
     
 
-def calculate_r2_score(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
+def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
     scores, adj_scores = [], []
 
     for train_index, test_index in kf.split(X):
