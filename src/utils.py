@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 from sklearn.base import clone
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
+from sklearn.metrics import r2_score
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -106,7 +107,7 @@ def tsen_pca_viz(data, batch_labels, labels, filename=''):
     plt.savefig(f'batch_effect/{filename}.png', dpi=300)
 
 
-def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
+def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold, y_LOD:float) -> np.ndarray:
     per_diff_all = []
     
     for train_index, test_index in kf.split(X):
@@ -128,7 +129,7 @@ def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
         non_zero_per_error = np.abs(y_test[mask] - y_pred[mask])/(0.5*(y_test[mask] + y_pred[mask]))
         
         # zero concentration
-        zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) / self.y_LOD
+        zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) / y_LOD
 
         assert not(np.isnan(zero_per_error).any())
         assert not(np.isnan(non_zero_per_error).any())
@@ -144,7 +145,7 @@ def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
     
 
 def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
-    scores, adj_scores = [], []
+    y_pred_all, y_test_all = [], []
 
     for train_index, test_index in kf.split(X):
         model_ = clone(model)
@@ -158,12 +159,11 @@ def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
         y_pred         = model_.predict(X_test)
         y_pred         = np.maximum(y_pred, 0.0)
 
-        score          = r2_score(y_test, y_pred)
+        y_pred_all += y_pred.tolist()
+        y_test_all += y_test.tolist()
 
-        adj_score      = find_adj_score(len(y_pred), X_train.shape[1], score) # N, P, R2 score
+    score         = r2_score(y_test_all, y_pred_all)
+    adj_score     = find_adj_score(len(y_pred_all), X_train.shape[1], score) # N, P, R2 score
 
-        scores.append(score)
-        adj_scores.append(adj_score)
-
-    return np.array(scores).mean(), np.array(adj_scores).mean()
+    return np.array(score), np.array(adj_score)
     
