@@ -19,6 +19,7 @@ def find_concentration_distribution(y: pd.Series) -> int:
     for i in unique_: count[i] = all_labels.count(i)
     
     return count
+
 def create_correlation_matrix(X_correl:pd.DataFrame) -> None:
 
     # Remove the univariate from the column name
@@ -56,7 +57,9 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
                                 "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
     y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
 
-    
+    # Copy the dataframe to remove the warning caused because of slicing view
+    X   = X.copy()
+
     X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
                     'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
