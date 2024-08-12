@@ -6,9 +6,21 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from sklearn.base import clone
+from sklearn.base import BaseEstimator
+from sklearn.model_selection import KFold
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+
+def verify_batch_label_dist(y):
+    new_df          = pd.DataFrame(y, columns=['y'])
+    new_df['batch'] = new_df['y'].apply(lambda x: x.split('_')[0])
+    new_df['label'] = new_df['y'].apply(lambda x: x.split('_')[1])
+    
+    df = new_df.groupby (['batch', 'label']).count()
+    return df
 
 def find_adj_score(N: int, P: int, R_2: float) -> float:
     return (1 - (1 - R_2)*(N - 1)/(N - P - 1))
@@ -92,3 +104,66 @@ def tsen_pca_viz(data, batch_labels, labels, filename=''):
     axs[3].set_ylabel('Density')
 
     plt.savefig(f'batch_effect/{filename}.png', dpi=300)
+
+
+def calculate_per_diff(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
+    per_diff_all = []
+    
+    for train_index, test_index in kf.split(X):
+        model_ = clone(model)
+        
+        # Split the data into training and testing sets
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.to_numpy()[train_index], y.to_numpy()[test_index]
+    
+        model_.fit(X_train, y_train)
+        
+        mask           = (y_test != 0)    # Non Zero Concentration
+        zero_mask      = ~(mask)          # Zero Concentration
+
+        y_pred         = model_.predict(X_test)
+        y_pred         = np.maximum(y_pred, 0.0)
+
+        # Only for non zero concentration
+        non_zero_per_error = np.abs(y_test[mask] - y_pred[mask])/(0.5*(y_test[mask] + y_pred[mask]))
+        
+        # zero concentration
+        zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) / self.y_LOD
+
+        assert not(np.isnan(zero_per_error).any())
+        assert not(np.isnan(non_zero_per_error).any())
+
+        per_error         = np.concatenate((non_zero_per_error, zero_per_error))
+        per_error         = np.mean(per_error) * 100
+
+        assert not(np.isnan(per_error)) # To check if any output is invalid or nan
+        per_diff_all.append(per_error)
+
+    
+    return np.array(per_diff_all).mean()
+    
+
+def calculate_r2_score(self, model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
+    scores, adj_scores = [], []
+
+    for train_index, test_index in kf.split(X):
+        model_ = clone(model)
+        
+        # Split the data into training and testing sets
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.to_numpy()[train_index], y.to_numpy()[test_index]
+    
+        model_.fit(X_train, y_train)
+        
+        y_pred         = model_.predict(X_test)
+        y_pred         = np.maximum(y_pred, 0.0)
+
+        score          = r2_score(y_test, y_pred)
+
+        adj_score      = find_adj_score(len(y_pred), X_train.shape[1], score) # N, P, R2 score
+
+        scores.append(score)
+        adj_scores.append(adj_score)
+
+    return np.array(scores).mean(), np.array(adj_scores).mean()
+    
