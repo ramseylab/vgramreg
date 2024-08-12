@@ -30,7 +30,7 @@ class ModelSelection():
         return np.array(calculate_r2_score(self.model, self.X_train[features], self.y_train, kf))
     
     def find_per_diff(self, kf:KFold, features:list) -> np.ndarray:
-        return np.array(calculate_per_diff(self.model, self.X_train[features], self.y_train, kf))
+        return np.array(calculate_per_diff(self.model, self.X_train[features], self.y_train, kf, self.y_LOD))
     
     def fit(self, features:list) -> None:
         self.model.fit(self.X_train[features], self.y_train)
