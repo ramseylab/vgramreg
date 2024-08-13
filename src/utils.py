@@ -11,8 +11,12 @@ from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 
+from pycombat import Combat
+
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+from typing import List
 
 
 def verify_batch_label_dist(y):
@@ -57,7 +61,9 @@ def calculate_y_LOD(X_train, y_train):
     return 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
 
 
-def tsen_pca_viz(data, batch_labels, labels, filename=''):
+def tsen_pca_viz(data:List[pd.DataFrame], batch_labels:List[str], labels:List[str], filename=''):
+    
+    data        = pd.concat(data)
     tsne        = TSNE(n_components=2, random_state=42)
     tsne_result = tsne.fit_transform(data)
     
@@ -104,8 +110,8 @@ def tsen_pca_viz(data, batch_labels, labels, filename=''):
     axs[3].set_xlabel('PCA Component Value')
     axs[3].set_ylabel('Density')
 
-    plt.savefig(f'batch_effect/{filename}.png', dpi=300)
-
+    if filename!='': plt.savefig(f'batch_effect/{filename}.png', dpi=300)
+    else: plt.show()
 
 def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold, y_LOD:float) -> np.ndarray:
     per_diff_all = []
@@ -167,3 +173,27 @@ def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
 
     return np.array(score), np.array(adj_score)
     
+
+def perform_combat_normalization(data:List[pd.DataFrame], dataset_name:List[str]) -> List[pd.DataFrame]:
+    
+    features       = pd.concat(data)
+    batch_labels   = np.repeat(dataset_name, repeats=[len(i) for i in data])
+    
+    combat        = Combat()
+    combat_output = combat.fit_transform(features.values, batch_labels)
+
+    ind_concat    = []
+    temp_ind      = 0
+    for i in range(len(data)):
+        ind_concat.append((temp_ind, temp_ind +  data[i].shape[0]))
+        temp_ind      = ind_concat[i][-1]
+    
+    print(ind_concat)
+
+    output = [pd.DataFrame(combat_output[i:j], columns=data[0].columns) for i, j in ind_concat]
+
+    for i, x in enumerate(output):
+        assert x.shape == data[i].shape
+
+    return output, batch_labels
+
