@@ -180,7 +180,8 @@ def perform_combat_normalization(data:List[pd.DataFrame], dataset_name:List[str]
     batch_labels   = np.repeat(dataset_name, repeats=[len(i) for i in data])
     
     combat        = Combat()
-    combat_output = combat.fit_transform(features.values, batch_labels)
+    combat.fit(features.values, batch_labels)
+    combat_output = combat.transform(features.values, batch_labels)
 
     ind_concat    = []
     temp_ind      = 0
