@@ -173,28 +173,36 @@ def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
 
     return np.array(score), np.array(adj_score)
     
-
-def perform_combat_normalization(data:List[pd.DataFrame], dataset_name:List[str]) -> List[pd.DataFrame]:
-    
+def combine_all_batches(data, dataset_name):
     features       = pd.concat(data)
     batch_labels   = np.repeat(dataset_name, repeats=[len(i) for i in data])
-    
-    combat        = Combat()
-    combat.fit(features.values, batch_labels)
-    combat_output = combat.transform(features.values, batch_labels)
 
+    return features, batch_labels
+
+def split_batches_back(data, combat_output):
     ind_concat    = []
     temp_ind      = 0
     for i in range(len(data)):
         ind_concat.append((temp_ind, temp_ind +  data[i].shape[0]))
         temp_ind      = ind_concat[i][-1]
-    
-    print(ind_concat)
 
     output = [pd.DataFrame(combat_output[i:j], columns=data[0].columns) for i, j in ind_concat]
 
     for i, x in enumerate(output):
         assert x.shape == data[i].shape
+    return output
 
-    return output, batch_labels
+def perform_combat_normalization(data:List[pd.DataFrame], dataset_name:List[str]) -> List[pd.DataFrame]:
+    
+    features, batch_labels = combine_all_batches(data, dataset_name)
+    
+    combat        = Combat()
+    combat.fit(features.values, batch_labels)
+    combat_output = combat.transform(features.values, batch_labels)
+
+    output = split_batches_back(data, combat_output)
+
+    return output, batch_labels, combat
+
+
 

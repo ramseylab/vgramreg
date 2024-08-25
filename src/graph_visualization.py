@@ -181,7 +181,10 @@ def visualization_testing_dataset(dict_:dict,
                  'Linear': 'x',
                  'SVM':'*',
                  'Ridge':'+',
-                 'Lasso':'s'}
+                 'Lasso':'s',
+                 'RBF':'*',
+                 'Poly':'+',
+                 'Sigmoid':'s'}
     
     decimal_prec = 3 if r2_score else 1
 

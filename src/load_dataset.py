@@ -42,7 +42,7 @@ def select_normalizer(standardize_type):
 
     return scaler
 
-def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True, test_nor_separate=False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     if dataset_path==None: dataset_path = DATASET_PATH
 
     if 'ML1_ML2'in os.path.basename(dataset_path):
@@ -93,7 +93,7 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
         X_train_normalize = scaler.transform(X_train)
         
         # Transform the data
-        X_test_normalize = scaler.transform(X_test)
+        X_test_normalize =   scaler.fit_transform(X_test) if test_nor_separate else scaler.transform(X_test)
 
 
         X_train = pd.DataFrame(X_train_normalize,  columns=X.columns)

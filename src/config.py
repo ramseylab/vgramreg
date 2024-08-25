@@ -86,7 +86,7 @@ params = {
             'gamma':0.01, 
             'kernel':'rbf'
             },
-    'RF': {'n_estimators': 100,
+    'RF': {'n_estimators': 200,
             'max_depth': 10,
             'min_samples_split': 10,
             'min_samples_leaf': 2 
