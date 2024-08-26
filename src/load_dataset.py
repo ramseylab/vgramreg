@@ -109,4 +109,4 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
     print("Training", find_concentration_distribution(y_train))
     print("Testing",  find_concentration_distribution(y_test))
     print("#################################")
-    return (X_train, X_test, y_train, y_test), scaler
+    return (X_train.reset_index(drop=True), X_test.reset_index(drop=True), y_train.reset_index(drop=True), y_test.reset_index(drop=True)), scaler
