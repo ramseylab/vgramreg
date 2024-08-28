@@ -42,7 +42,7 @@ def select_normalizer(standardize_type):
 
     return scaler
 
-def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True, test_nor_separate=False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True, test_nor_separate=False, showFileName=False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     if dataset_path==None: dataset_path = DATASET_PATH
 
     if 'ML1_ML2'in os.path.basename(dataset_path):
@@ -55,7 +55,8 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
     
     X   = df[["peak area", "peak curvature", "peak V", "vcenter", "PH", "signal_mean", "signal_std", \
                                 "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
-    y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+    if showFileName: y = df['file']
+    else: y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
 
     # Copy the dataframe to remove the warning caused because of slicing view
     X   = X.copy()

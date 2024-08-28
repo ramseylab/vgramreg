@@ -11,8 +11,8 @@ import scipy.stats as stats
 from glob import glob
 from typing import Tuple
 
-from vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
-from config import DATASET_PATH, OUTPUT_PATH
+from src.vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
+from src.config import DATASET_PATH, OUTPUT_PATH
 
 def find_first_derivative_peaks(V: np.ndarray, Signal: np.ndarray):
   
@@ -72,6 +72,7 @@ def v2signal_extra_features(vg_filename: str,
     vg_df["detilted"] = detilter(vg_df["V"].to_numpy(),
                                  vg_df["smoothed"].to_numpy())
 
+    print("Inside Fun",max(vg_df["detilted"]))
     # print(vg_df["detilted"].shape, vg_df["smoothed"].shape)
 
     signal_getter = make_signal_getter(vstart, vend)
