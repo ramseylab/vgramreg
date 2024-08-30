@@ -55,8 +55,13 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
     
     X   = df[["peak area", "peak curvature", "peak V", "vcenter", "PH", "signal_mean", "signal_std", \
                                 "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
-    if showFileName: y = df['file']
-    else: y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+    if showFileName: 
+        y = df['file']
+        stratified_y = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+
+    else: 
+        y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+        stratified_y = y
 
     # Copy the dataframe to remove the warning caused because of slicing view
     X   = X.copy()
@@ -77,7 +82,7 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
             return pd.DataFrame(X_, columns=X.columns), y
 
     # Split the total dataset into training (60%) and testing (40%) dataset
-    X_train, X_test, y_train, y_test  = train_test_split(X, y, test_size=0.4, shuffle=True, random_state=20, stratify=y)
+    X_train, X_test, y_train, y_test  = train_test_split(X, y, test_size=0.4, shuffle=True, random_state=20, stratify=stratified_y)
 
     scaler = None
     if normalization:
