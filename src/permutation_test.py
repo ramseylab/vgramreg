@@ -24,7 +24,8 @@ def pair_permutation_test(model1_pred: np.array,
     observed_r2_score  = np.abs(r2_model1_score - r2_model2_score)
     
     # Calcualte Observed Difference
-    observed_statistic = np.abs(model1_scores - model2_scores)
+    per_diff           = model1_scores - model2_scores
+    observed_statistic = np.abs(per_diff)
     
     # Number of permutations
     n_permutations = 10000
@@ -45,7 +46,7 @@ def pair_permutation_test(model1_pred: np.array,
     # Calculate p-value
     p_value = np.mean(permutation_statistics >= observed_statistic)
 
-    return observed_r2_score, observed_statistic, p_value, permutation_statistics.mean(), permutation_statistics.std()
+    return observed_r2_score, per_diff, p_value, permutation_statistics.mean(), permutation_statistics.std()
 
 
 def find_paired_permutation_test(dataset:Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series],

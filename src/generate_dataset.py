@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, 'src/')
+sys.path.insert(0, '../')
 
 import scipy
 import os
@@ -10,6 +10,7 @@ import scipy.stats as stats
 
 from glob import glob
 from typing import Tuple
+from tqdm import tqdm
 
 from src.vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
 from src.config import DATASET_PATH, OUTPUT_PATH
@@ -65,8 +66,8 @@ def v2signal_extra_features(vg_filename: str,
                                                      vg_df["smoothed"])
 
     vcenter = peak_v_shoulder
-    vstart = vcenter - 0.5*vwidth
-    vend = vcenter + 0.5*vwidth
+    vstart  = vcenter - 0.5*vwidth
+    vend    = vcenter + 0.5*vwidth
 
     detilter = make_detilter(vstart, vend, stiffness)
     vg_df["detilted"] = detilter(vg_df["V"].to_numpy(),
@@ -112,7 +113,7 @@ def make_xlsx_str(do_log:bool,
     vwidth2_str = "_" + str(vwidth2)
 
     # combine all params into one string
-    data_str = log_str + recenter_str + smooth_str + stiff_str + vcenter_str + vwidth1_str + vwidth2_str + "extra_features" ".xlsx"
+    data_str = log_str + recenter_str + smooth_str + stiff_str + vcenter_str + vwidth1_str + vwidth2_str + "features_no_negative_peak" ".xlsx"
     
     return data_str
     
@@ -228,7 +229,7 @@ def run_vg2(folderpath: str,
     
     # save stats list to excel
     stats_str     = "stats" + data_str
-    signal_str    = "extracted_features.xlsx"
+    signal_str    = "features_no_negative_peak.xlsx"
     dataframe_str = "dataframe" + data_str
 
     conc_df.to_excel(stats_str, index=False,
@@ -246,7 +247,7 @@ def run_vg2(folderpath: str,
                            
 
 if __name__ == '__main__':
-    all_dataset = glob(f"{DATASET_PATH}")
+    all_dataset = glob(f"{DATASET_PATH}/")
     
     do_log   = True
     recenter = False
@@ -255,6 +256,8 @@ if __name__ == '__main__':
     c        = 1.04
     w1       = 0.15
     w2       = 0.17
+
+    print(all_dataset)
     
-    for dataset_path in all_dataset:
+    for dataset_path in tqdm(all_dataset):
         conc_df, signal_df = run_vg2(dataset_path, do_log, recenter, bw, s, c, w1, w2)

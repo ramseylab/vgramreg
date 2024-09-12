@@ -206,6 +206,8 @@ def v2signal(vg_filename: str,
     detilter = make_detilter(vstart, vend, stiffness)
     vg_df["detilted"] = detilter(vg_df["V"].to_numpy(),
                                  vg_df["smoothed"].to_numpy())
+    
+    vg_df['detilted'] = vg_df['detilted'].clip(lower=0.0)  # Remove any signal lower than zero
 
     signal_getter = make_signal_getter(vstart, vend)
     (peak_signal_return, peak_v_return) = signal_getter(vg_df["V"], vg_df["detilted"])
