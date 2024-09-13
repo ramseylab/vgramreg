@@ -98,10 +98,12 @@ def make_shoulder_getter(vstart: float,
         if len(roots_ddd) == 1:
             v_peak = float(roots_ddd[0])
         elif len(roots_ddd) > 1:
-            minsecond = min(spl_mdl_dd_pred)
-            idx = (numpy.abs(spl_mdl_dd_pred - minsecond)).argmin()
-            vin = list(v[v_in])
-            v_peak = vin[idx]
+            idx       = spl_mdl_dd(np.array(roots_ddd)).argmin()
+            v_peak    = roots_ddd[idx]
+            # minsecond = min(spl_mdl_dd_pred)
+            # idx = (numpy.abs(spl_mdl_dd_pred - minsecond)).argmin()
+            # vin = list(v[v_in])
+            # v_peak = vin[idx]
         else:
             minsecond = min(spl_mdl_dd_pred)
             idx = (numpy.abs(spl_mdl_dd_pred - minsecond)).argmin()
@@ -206,8 +208,6 @@ def v2signal(vg_filename: str,
     detilter = make_detilter(vstart, vend, stiffness)
     vg_df["detilted"] = detilter(vg_df["V"].to_numpy(),
                                  vg_df["smoothed"].to_numpy())
-    
-    vg_df['detilted'] = vg_df['detilted'].clip(lower=0.0)  # Remove any signal lower than zero
 
     signal_getter = make_signal_getter(vstart, vend)
     (peak_signal_return, peak_v_return) = signal_getter(vg_df["V"], vg_df["detilted"])
