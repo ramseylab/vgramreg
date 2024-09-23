@@ -37,8 +37,8 @@ models_features_r2 = {
                 #       'SVM':   ['univariate, std(S)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)'],
                 #       'Lasso': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
                 #       'Ridge': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature']
-                'Linear': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
-                'KNN': ['univariate, max(S)', 'univariate, std(S)', 'univariate, mean(S)', 'univariate, V_max(S)'],
+                'Linear': ['univariate, std(S)', 'vcenter', 'peak curvature', 'univariate, V_min(dS/dV)'],
+                'KNN': ['univariate, mean(S)', 'univariate, V_max(dS/dV)'],
                 'RF': ['univariate, std(S)', 'univariate, max(dS/dV) - min(dS/dV)'],
                 'GP': ['univariate, std(S)'],
                 'SVM': ['univariate, area(S)', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)', 'vcenter', 'univariate, area(dS/dV)', 'univariate, mean(S)'],
