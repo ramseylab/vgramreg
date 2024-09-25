@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.insert(0, '../')
 
 import numpy as np
 import pandas as pd
@@ -18,6 +20,7 @@ import seaborn as sns
 
 from typing import List
 
+from src.load_dataset import select_normalizer
 
 def verify_batch_label_dist(y):
     new_df          = pd.DataFrame(y, columns=['y'])
@@ -205,4 +208,21 @@ def perform_combat_normalization(data:List[pd.DataFrame], dataset_name:List[str]
     return output, batch_labels, combat
 
 
+
+def normalizer_inference_dataset(dataset, normalizer_type='mean_std'):
+    X = dataset.drop(columns='file').copy()
+    columns = X.columns
+    y = dataset['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+
+    scaler = select_normalizer(normalizer_type)
+    X      = scaler.fit_transform(X)
+    X      = pd.DataFrame(X, columns=columns)
+
+    X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+                        'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
+                    'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
+                    'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
+        }, inplace = True)
+    
+    return X, y
 
