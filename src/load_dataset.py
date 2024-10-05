@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+
 from glob import glob
 
 from sklearn.preprocessing import StandardScaler
@@ -26,9 +28,12 @@ def create_correlation_matrix(X_correl:pd.DataFrame) -> None:
     # Calculate the correlation matrix
     correlation_matrix = X_correl.corr()
 
+    # Create a mask for the upper triangle
+    mask = np.tril(np.ones_like(correlation_matrix, dtype=bool))
+
     # Plot the correlation matrix
     plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
+    sns.heatmap(correlation_matrix, mask=~mask, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5}, square=True)
     plt.title('Correlation Matrix')
     plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
      
