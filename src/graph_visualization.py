@@ -128,7 +128,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 
     if r2_score: 
         ax.set_xticklabels([])
-        plt.xlabel('Features', fontsize=14)
+        plt.xlabel('Models', fontsize=14)
     
     if legends:
         leg = plt.legend(df['Models'].values.tolist(), loc='upper left', bbox_to_anchor=(1, 1), fontsize=14)
@@ -140,7 +140,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 
     if (r2_score and adj_score):  path_name = path_name.split('.')[0]+"_Adj.png"
 
-    plt.xlabel('Features', fontsize=14)
+    plt.xlabel('Models', fontsize=14)
     plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
     plt.clf()
 
@@ -196,7 +196,7 @@ def visualization_testing_dataset(dict_:dict,
 
     if r2_score: 
         ax.set_xticklabels([])
-        plt.xlabel('Features', fontsize=14)
+        plt.xlabel('Models', fontsize=14)
     
     if legends:
         leg = plt.legend(df['Models'].values, loc='upper left', bbox_to_anchor=(1, 1), fontsize=14)
@@ -205,7 +205,7 @@ def visualization_testing_dataset(dict_:dict,
             line.set_color('black')
 
         ax.set_xticklabels([])
-        plt.xlabel('Features', fontsize=14)
+        plt.xlabel('Models', fontsize=14)
         
     if (r2_score and adj_score):  path_name = path_name.split('.')[0]+"_Adj.png"  
 
