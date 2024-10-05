@@ -38,6 +38,7 @@ def per_error(y_test:pd.Series, y_pred:np.array, y_LOD:float)->float:
     mask           = (y_test != 0)    # Non Zero Concentration
     zero_mask      = ~(mask)          # Zero Concentration
 
+    # y_pred[y_pred<1.36]         = 0.0
     y_pred         = np.maximum(y_pred, 0.0)
 
     # Only for non zero concentration
@@ -225,4 +226,29 @@ def normalizer_inference_dataset(dataset, normalizer_type='mean_std'):
         }, inplace = True)
     
     return X, y
+
+
+def evaluate_score_class_stratified(y_pred:np.ndarray, y_test:pd.Series, score='r2', y_LOD=0.9117010154341669):
+    y_test = y_test.reset_index(drop=True)
+    
+    labels = y_test.unique()
+    temp   = y_test.groupby(y_test).apply(lambda x: x.index.tolist())
+    label_to_indx = {label:temp[label] for label in labels}
+
+    scores = {}
+    
+    for label in labels:
+        indx = label_to_indx[label]       # Find respective indices for the label
+        
+        y_pred_label = y_pred[indx]       # Only take the specific label
+        y_test_label = y_test[indx]
+
+
+        # Evaluate score for only the specified labels
+        residue = y_test_label.to_numpy() - y_pred_label
+
+        if score=='r2': scores[label] = {'score': r2_score(y_test_label,  y_pred_label),        'residue':  residue} 
+        else:  scores[label] = {'score': per_error(y_test_label, y_pred_label, y_LOD), 'residue': residue } 
+    
+    return scores
 
