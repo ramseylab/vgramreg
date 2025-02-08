@@ -42,77 +42,145 @@ def select_normalizer(standardize_type):
 
     return scaler
 
-def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True, test_nor_separate=False, showFileName=False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-    if dataset_path==None: dataset_path = DATASET_PATH
+def normalize_create_training_data(train, test, blank_norm=False, remove_outlier=None, normalizer_type='mean_std'):
 
-    if 'ML1_ML2'in os.path.basename(dataset_path):
-        datasets = sorted([f"{i}/extracted_features.xlsx" for i in glob(f'{dataset_path}/*')])
+    # Remove outlier only from the training dataset
+    if remove_outlier=='all':
+        
+        train = train[train['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
+        test  = test[test['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
+
+    elif remove_outlier=='train_only':
+        train = train[train['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
+        
+    train = train.reset_index(drop=True)
+    test  = test.reset_index(drop=True)
     
-        df  = [pd.read_excel(dataset) for dataset in datasets]
-        df  = pd.concat(df)
+    X_train = train.drop(columns=['file']).copy()
+    X_test  = test.drop(columns=['file']).copy()
+
+    columns       = X_train.columns
     
-    else: df = pd.read_excel(f'{dataset_path}/extracted_features.xlsx')
+    y_train = train['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+    y_test  = test['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+
+    assert (X_train.index.values == y_train.index.values).all()
+
+    if normalizer_type!=None:
+        scaler  = select_normalizer(normalizer_type)
     
-    X   = df[["peak area", "peak curvature", "peak V", "vcenter", "PH", "signal_mean", "signal_std", \
-                                "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
-    if showFileName: 
-        y = df['file']
-        stratified_y = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+        if blank_norm: scaler.fit(X_train[y_train==0])
+        else: scaler.fit(X_train)
+    
+        
+        X_train = pd.DataFrame(scaler.transform(X_train), columns=columns)
+        X_test  = pd.DataFrame(scaler.transform(X_test),  columns=columns)
 
-    else: 
-        y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
-        stratified_y = y
+    else:
+        scaler = None
 
-    # Copy the dataframe to remove the warning caused because of slicing view
-    X   = X.copy()
-
-    X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+    X_train.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
                     'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
                     'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
         }, inplace = True)
 
-    if not(split): 
-        if not(normalization): return X, y
-        else:
-            scaler = select_normalizer(standardize_type)
-            scaler.fit(X[y==0]) if (normalize_blanks and (standardize_type=='mean_std')) else scaler.fit(X)
-            X_ = scaler.transform(X)
+    X_test.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+                        'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
+                    'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
+                    'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
+        }, inplace = True)
 
-            return pd.DataFrame(X_, columns=X.columns), y
+   
 
-    # Split the total dataset into training (60%) and testing (40%) dataset
-    X_train, X_test, y_train, y_test  = train_test_split(X, y, test_size=0.4, shuffle=True, random_state=20, stratify=stratified_y)
+    return (X_train, X_test, y_train, y_test), scaler
 
-    scaler = None
-    if normalization:
-        # Initialize the StandardScaler
-        scaler = select_normalizer(standardize_type)
+def load_dataset_train_test_splitted(filename, load_dataset_name=['ML1', 'ML2', 'ML4']):
+    dataset = {}
 
-        # Fit the scaler to only the blank of the training dataset
-        if (normalize_blanks and standardize_type=='mean_std'): scaler.fit(X_train[y_train==0].copy())
+    if 'ML1' in load_dataset_name:
+        dataset['ML1'] = pd.read_excel(f'/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML1_ML2/2024_02_19_ML1/{filename}.xlsx')
 
-        # Fit the scaler to the training dataset
-        else: scaler.fit(X_train)
-
-        # Transform the data
-        X_train_normalize = scaler.transform(X_train)
-        
-        # Transform the data
-        X_test_normalize =   scaler.fit_transform(X_test) if test_nor_separate else scaler.transform(X_test)
-
-
-        X_train = pd.DataFrame(X_train_normalize,  columns=X.columns)
-        X_test  = pd.DataFrame(X_test_normalize,   columns=X.columns)
-
-    else:  X_train, X_test = pd.DataFrame(X_train, columns=X.columns), pd.DataFrame(X_test, columns=X.columns)
-
-    # Generate Feature Correlation heat map
-    if eval_correl_matrix:
-        create_correlation_matrix(X_train.copy())
+    if 'ML2' in load_dataset_name:
+         dataset['ML2'] = pd.read_excel(f'/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML1_ML2/2024_02_22_ML2/{filename}.xlsx')
     
-    print("######Data Distribution:#########")
-    print("Training", find_concentration_distribution(y_train))
-    print("Testing",  find_concentration_distribution(y_test))
-    print("#################################")
-    return (X_train.reset_index(drop=True), X_test.reset_index(drop=True), y_train.reset_index(drop=True), y_test.reset_index(drop=True)), scaler
+    if 'ML4' in load_dataset_name:
+        dataset['ML4'] = pd.read_excel(f'/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML4/{filename}.xlsx')
+
+    return dataset
+
+
+# def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True, test_nor_separate=False, showFileName=False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+#     if dataset_path==None: dataset_path = DATASET_PATH
+
+#     if 'ML1_ML2'in os.path.basename(dataset_path):
+#         datasets = sorted([f"{i}/extracted_features.xlsx" for i in glob(f'{dataset_path}/*')])
+    
+#         df  = [pd.read_excel(dataset) for dataset in datasets]
+#         df  = pd.concat(df)
+    
+#     else: df = pd.read_excel(f'{dataset_path}/extracted_features.xlsx')
+    
+#     X   = df[["peak area", "peak curvature", "peak V", "vcenter", "PH", "signal_mean", "signal_std", \
+#                                 "dS_dV_max_peak", "dS_dV_min_peak", "dS_dV_peak_diff", "dS_dV_max_V", "dS_dV_min_V", "dS_dV_area"]]
+#     if showFileName: 
+#         y = df['file']
+#         stratified_y = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+
+#     else: 
+#         y   = df['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+#         stratified_y = y
+
+#     # Copy the dataframe to remove the warning caused because of slicing view
+#     X   = X.copy()
+
+#     X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+#                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
+#                     'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
+#                     'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
+#         }, inplace = True)
+
+#     if not(split): 
+#         if not(normalization): return X, y
+#         else:
+#             scaler = select_normalizer(standardize_type)
+#             scaler.fit(X[y==0]) if (normalize_blanks and (standardize_type=='mean_std')) else scaler.fit(X)
+#             X_ = scaler.transform(X)
+
+#             return pd.DataFrame(X_, columns=X.columns), y
+
+#     # Split the total dataset into training (60%) and testing (40%) dataset
+#     X_train, X_test, y_train, y_test  = train_test_split(X, y, test_size=0.4, shuffle=True, random_state=20, stratify=stratified_y)
+
+#     scaler = None
+#     if normalization:
+#         # Initialize the StandardScaler
+#         scaler = select_normalizer(standardize_type)
+
+#         # Fit the scaler to only the blank of the training dataset
+#         if (normalize_blanks and standardize_type=='mean_std'): scaler.fit(X_train[y_train==0].copy())
+
+#         # Fit the scaler to the training dataset
+#         else: scaler.fit(X_train)
+
+#         # Transform the data
+#         X_train_normalize = scaler.transform(X_train)
+        
+#         # Transform the data
+#         X_test_normalize =   scaler.fit_transform(X_test) if test_nor_separate else scaler.transform(X_test)
+
+
+#         X_train = pd.DataFrame(X_train_normalize,  columns=X.columns)
+#         X_test  = pd.DataFrame(X_test_normalize,   columns=X.columns)
+
+#     else:  X_train, X_test = pd.DataFrame(X_train, columns=X.columns), pd.DataFrame(X_test, columns=X.columns)
+
+#     # Generate Feature Correlation heat map
+#     if eval_correl_matrix:
+#         create_correlation_matrix(X_train.copy())
+    
+#     print("######Data Distribution:#########")
+#     print("Training", find_concentration_distribution(y_train))
+#     print("Testing",  find_concentration_distribution(y_test))
+#     print("#################################")
+#     return (X_train.reset_index(drop=True), X_test.reset_index(drop=True), y_train.reset_index(drop=True), y_test.reset_index(drop=True)), scaler
