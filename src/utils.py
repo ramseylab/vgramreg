@@ -18,7 +18,7 @@ from pycombat import Combat
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from typing import List
+from typing import List, Tuple
 
 from src.load_dataset import select_normalizer
 
@@ -56,6 +56,9 @@ def per_error(y_test:pd.Series, y_pred:np.array, y_LOD:float)->float:
     return per_error
 
 def calculate_y_LOD(X_train, y_train):
+    """
+        This function calculates the Limit of Detection for the linear model
+    """
     model_yLOD = LinearRegression()
     model_yLOD.fit(X_train[['univariate, std(S)']], y_train)          # Selecting standard deviation of sample as a feature
     
@@ -117,7 +120,16 @@ def tsen_pca_viz(data:List[pd.DataFrame], batch_labels:List[str], labels:List[st
     if filename!='': plt.savefig(f'batch_effect/{filename}.png', dpi=300)
     else: plt.show()
 
-def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold, y_LOD:float) -> np.ndarray:
+
+def calculate_per_diff(model:BaseEstimator, 
+                       X:pd.DataFrame, 
+                       y:pd.Series, 
+                       kf:KFold, 
+                       y_LOD:float) -> np.float64:
+    """
+        This function calculates the % difference for the given model and the input data.
+    """
+     
     per_diff_all = []
     
     for train_index, test_index in kf.split(X):
@@ -154,7 +166,13 @@ def calculate_per_diff(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
     return np.array(per_diff_all).mean()
     
 
-def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFold) -> np.ndarray:
+def calculate_r2_score(model:BaseEstimator, 
+                       X:pd.DataFrame, 
+                       y:pd.Series, 
+                       kf:KFold) -> Tuple[np.float64, np.float64]:
+    """
+        This function calculates the R2 and Adjusted R2 for the given model and the input data.
+    """
     y_pred_all, y_test_all = [], []
 
     for train_index, test_index in kf.split(X):
@@ -172,10 +190,26 @@ def calculate_r2_score(model:BaseEstimator, X:pd.DataFrame, y:pd.Series, kf:KFol
         y_pred_all += y_pred.tolist()
         y_test_all += y_test.tolist()
 
-    score         = r2_score(y_test_all, y_pred_all)
+    score         = r2_score(y_test_all, y_pred_all)      # It is a numpy float
     adj_score     = find_adj_score(len(y_pred_all), X_train.shape[1], score) # N, P, R2 score
 
-    return np.array(score), np.array(adj_score)
+    return np.array(score), np.array(adj_score)           # Numpy Float
+
+def calculate_combined_r2_and_per_diff(model:BaseEstimator, 
+                                       X:pd.DataFrame, 
+                                       y:pd.Series, 
+                                       kf:KFold,
+                                       y_LOD:float,
+                                       use_adjusted_r2:False,
+                                       alpha=-1) -> np.float64:
+    """
+        This function combines Adjusted R2 and percentage diff for the given model and the input data.
+    """
+    r2       = calculate_r2_score(model, X, y, kf)[1 if use_adjusted_r2 else 0] # 0 indicates R2 and 1 indicates adjusted R2
+    diff     = calculate_per_diff(model, X, y, kf, y_LOD) / 100
+    
+    return (r2 - diff) if (alpha==-1) else (alpha * r2 + (1 - alpha)*(1 - diff))
+    
     
 def combine_all_batches(data, dataset_name):
     features       = pd.concat(data)
