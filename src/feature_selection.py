@@ -35,7 +35,7 @@ class ModelSelection():
     def fit(self, features:list) -> None:
         self.model.fit(self.X_train[features], self.y_train)
 
-    def find_best_features(self, kf:KFold, r2_score:float) -> list:
+    def find_best_features(self, kf:KFold, r2_score:bool) -> list:
         model = clone(self.model)
 
         all_features           = self.X_train.columns.values
@@ -55,9 +55,9 @@ class ModelSelection():
                     testing_feature = self.selected_features + [feature]
                     
                     if r2_score:
-                        score = self.calculate_r2_score(model, self.X_train[testing_feature], self.y_train, kf)
+                        score = calculate_r2_score(self.model, self.X_train[testing_feature], self.y_train, kf)
                     else:  
-                        score = self.calculate_per_diff(model, self.X_train[testing_feature], self.y_train, kf)
+                        score = calculate_per_diff(self.model, self.X_train[testing_feature], self.y_train, kf, self.y_LOD)
                     
                     one_line_score.append(score)
                     one_line_features.append(feature)
