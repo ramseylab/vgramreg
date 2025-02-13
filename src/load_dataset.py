@@ -42,17 +42,11 @@ def select_normalizer(standardize_type):
 
     return scaler
 
-def normalize_create_training_data(train, test, blank_norm=False, remove_outlier=None, normalizer_type='mean_std'):
+def normalize_create_training_data(train, test, ouliners_to_remove=[], blank_norm=False, normalizer_type='mean_std'):
 
-    # Remove outlier only from the training dataset
-    if remove_outlier=='all':
-        
-        train = train[train['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
-        test  = test[test['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
-
-    elif remove_outlier=='train_only':
-        train = train[train['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
-        
+    # Remove outlier if there any outlier in the list
+    train = train[train['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
+              
     train = train.reset_index(drop=True)
     test  = test.reset_index(drop=True)
     
