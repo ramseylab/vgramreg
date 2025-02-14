@@ -31,18 +31,33 @@ def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
 
     return df
 
+def get_best_score_per_feature_count(feature_scores: dict, only_best=True, higher_better=True):
+    best_score_feature_set = []
+    feature_scores = [feature_scores[-1]] if only_best else feature_scores
+
+    for ind, feature_set in enumerate(feature_scores):
+        feature_comb = list(feature_set.keys())
+        scores       = list(feature_set.values())
+        best_ind     = np.argmax(scores) if higher_better else np.argmin(scores)
+
+        best_score_feature_set.append((feature_comb[best_ind], scores[best_ind]))
+
+    return best_score_feature_set[-1] if only_best else best_score_feature_set
+
+
+    
 def visualize_highest_score_feature_selection(all_dataset_feature_score: dict, 
                                               path_name:str, 
                                               model_name_conversion: dict, 
-                                              r2_score=True, 
+                                              higher_better=True, 
                                               adj_score=False,
                                               only_one_multivariate=True, 
                                               legends=False, 
                                               extra_symbol=None) -> pd.DataFrame:
 
     """
-        This function takes the feature selected score from the feature selection and plots the bargraph with the best features 
-        comparing each model with the given performance metrics
+        This function takes the scores from the feature selection dictionary and plots the bargraph with the best features 
+        comparing for each model with the given performance metrics
     """
     os.makedirs(os.path.dirname(path_name), exist_ok=True)
     plt.figure(figsize=(35, 15))
@@ -113,7 +128,7 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
                  'Ridge':'+',
                  'Lasso':'s'}
     
-    decimal_prec = 3 if r2_score else 1
+    decimal_prec = 3 if higher_better else 1
 
     for i, p in enumerate(ax.patches):
         ax.annotate(str(round(p.get_height(), decimal_prec)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
