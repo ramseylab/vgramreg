@@ -40,6 +40,10 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
                                               legends=False, 
                                               extra_symbol=None) -> pd.DataFrame:
 
+    """
+        This function takes the feature selected score from the feature selection and plots the bargraph with the best features 
+        comparing each model with the given performance metrics
+    """
     os.makedirs(os.path.dirname(path_name), exist_ok=True)
     plt.figure(figsize=(35, 15))
 
@@ -96,14 +100,14 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
-    symbols      = {'multivariate':'o', 'univariate, std(S)':'^', 'univariate, mean(S)':'x',\
-                 'univariate, area(S)':'v', \
-                 'univariate, area(dS/dV)':'D', \
-                 'univariate, max(S)':'*', \
+    symbols      = {'multivariate':'o', 'std(S)':'^', 'mean(S)':'x',\
+                 'area(S)':'v', \
+                 'area(dS/dV)':'D', \
+                 'max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
                  'Gaussian Process': 'v',
-                 'univariate, max(dS/dV)': 'v',\
+                 'max(dS/dV)': 'v',\
                  'Linear': 'x',
                  'SVM':'*',
                  'Ridge':'+',
@@ -168,15 +172,15 @@ def visualization_testing_dataset(dict_:dict,
     if not (only_one_multivariate): df['Models'] = df['Models'].apply(lambda x: model_name_conversion[x] if (x in model_name_conversion) else x )
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
-    symbols      = {'multivariate':'o', 'univariate, std(S)':'1', 'univariate, mean(S)':'x',\
-                 'univariate, area(S)':'2', \
-                 'univariate, area(dS/dV)':'D', \
-                 'univariate, max(S)':'*', \
+    symbols      = {'multivariate':'o', 'std(S)':'1', 'mean(S)':'x',\
+                 'area(S)':'2', \
+                 'area(dS/dV)':'D', \
+                 'max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
                  'RF': '^',\
                  'Gaussian Process': 'v',\
-                 'univariate, max(dS/dV)': '3',\
+                 'max(dS/dV)': '3',\
                  'GP': 'v',\
                  'Linear': 'x',
                  'SVM':'*',

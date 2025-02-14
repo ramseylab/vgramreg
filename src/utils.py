@@ -60,10 +60,10 @@ def calculate_y_LOD(X_train, y_train):
         This function calculates the Limit of Detection for the linear model
     """
     model_yLOD = LinearRegression()
-    model_yLOD.fit(X_train[['univariate, std(S)']], y_train)          # Selecting standard deviation of sample as a feature
+    model_yLOD.fit(X_train[['std(S)']], y_train)          # Selecting standard deviation of sample as a feature
     
     S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
-    SD = X_train['univariate, std(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
+    SD = X_train['std(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
 
     return 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
 
@@ -254,10 +254,10 @@ def normalizer_inference_dataset(dataset, normalizer_type='mean_std'):
     X      = scaler.fit_transform(X)
     X      = pd.DataFrame(X, columns=columns)
 
-    X.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
-                        'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
-                    'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
-                    'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
+    X.rename(columns={"PH": 'max(S)', 'signal_std':'std(S)', 'signal_mean':'mean(S)', 'peak area':'area(S)', \
+                        'dS_dV_area':'area(dS/dV)', 'dS_dV_max_peak':'max(dS/dV)', 'dS_dV_min_peak':'min(dS/dV)',\
+                    'dS_dV_peak_diff':'max(dS/dV) - min(dS/dV)', \
+                    'peak V':'V_max(S)', 'dS_dV_max_V':'V_max(dS/dV)', 'dS_dV_min_V':'V_min(dS/dV)',\
         }, inplace = True)
     
     return X, y
