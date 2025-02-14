@@ -12,7 +12,7 @@ from sklearn.model_selection import KFold
 from typing import Tuple
 
 from src.load_models import select_model
-from src.utils import find_adj_score, calculate_y_LOD, calculate_r2_score, calculate_per_diff
+from src.utils import find_adj_score, calculate_y_LOD, calculate_r2_score, calculate_per_diff, calculate_combined_r2_and_per_diff
 
 class ModelSelection():
     def __init__(self, model_name:str, X_train:pd.DataFrame, y_train:pd.Series):
@@ -35,14 +35,14 @@ class ModelSelection():
     def fit(self, features:list) -> None:
         self.model.fit(self.X_train[features], self.y_train)
 
-    def find_best_features(self, kf:KFold, r2_score:bool) -> list:
+    def find_best_features(self, kf:KFold, metric='r2', use_adjusted_r2=False) -> list:
         model = clone(self.model)
 
         all_features           = self.X_train.columns.values
         self.selected_features = []
         self.all_feature_scores = []
 
-        best_score        = [0, 0] if r2_score else 100.0
+        self.best_score        = 100.0 if metric=='per_diff' else 0
         flag              = False
 
         while len(self.selected_features) != len(all_features):
@@ -54,22 +54,26 @@ class ModelSelection():
                 if feature not in self.selected_features:
                     testing_feature = self.selected_features + [feature]
                     
-                    if r2_score:
-                        score = calculate_r2_score(self.model, self.X_train[testing_feature], self.y_train, kf)
-                    else:  
+                    if 'r2'in metric:
+                        score = calculate_r2_score(self.model, self.X_train[testing_feature], self.y_train, kf, use_adjusted_r2=use_adjusted_r2)
+
+                    elif metric=='per_diff':  
                         score = calculate_per_diff(self.model, self.X_train[testing_feature], self.y_train, kf, self.y_LOD)
-                    
+
+                    else:
+                        score = calculate_combined_r2_and_per_diff(self.model, self.X_train[testing_feature], self.y_train, kf, self.y_LOD, use_adjusted_r2=use_adjusted_r2)
+
                     one_line_score.append(score)
                     one_line_features.append(feature)
            
-            one_line_score = np.array(one_line_score) if r2_score else one_line_score
+            # one_line_score = np.array(one_line_score) if r2_score else one_line_score
             
-            if r2_score==True:
-                best_socre_ind      = np.argmax(one_line_score[:,0])
-                one_line_best_score = one_line_score[best_socre_ind]
+            if metric=='per_diff':
+                best_socre_ind, one_line_best_score = np.argmin(one_line_score), np.min(one_line_score)
 
             else:
-                best_socre_ind, one_line_best_score = np.argmin(one_line_score), np.min(one_line_score)
+                best_socre_ind, one_line_best_score = np.argmax(one_line_score), np.max(one_line_score)
+                
 
             sel_one_line_feature    = one_line_features[best_socre_ind] 
 
@@ -78,27 +82,27 @@ class ModelSelection():
                 key = self.selected_features + [key]
                 temp[str(key)] = score
                 
-            if r2_score:
-                if one_line_best_score[0] > best_score[0]:
-                    best_score = one_line_best_score
+            if metric=='per_diff':
+
+                if one_line_best_score <= self.best_score:
+                    self.best_score = one_line_best_score
                     self.selected_features.append(sel_one_line_feature)
                     self.all_feature_scores.append(temp)
                     flag = False
 
                 else: flag = True
-                        
+ 
             else:
-                if one_line_best_score <= best_score:
-                    best_score = one_line_best_score
+                if one_line_best_score >= self.best_score:
+                    self.best_score = one_line_best_score
                     self.selected_features.append(sel_one_line_feature)
                     self.all_feature_scores.append(temp)
                     flag = False
 
                 else: flag = True
-
+                
             if flag: break
-        
-        self.best_score = best_score
+
         return self.all_feature_scores
     
     def find_testing_score(self, X_test: pd.DataFrame, y_test: pd.DataFrame) -> Tuple[list, list]:
