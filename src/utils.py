@@ -33,28 +33,6 @@ def verify_batch_label_dist(y):
 def find_adj_score(N: int, P: int, R_2: float) -> float:
     return (1 - (1 - R_2)*(N - 1)/(N - P - 1))
 
-def per_error(y_test:pd.Series, y_pred:np.array, y_LOD:float)->float:
-   
-    mask           = (y_test != 0)    # Non Zero Concentration
-    zero_mask      = ~(mask)          # Zero Concentration
-
-    # y_pred[y_pred<1.36]         = 0.0
-    y_pred         = np.maximum(y_pred, 0.0)
-
-    # Only for non zero concentration
-    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask])/(0.5*(y_test[mask] + y_pred[mask]))
-   
-    # zero concentration
-    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) / y_LOD
-
-    assert not(np.isnan(zero_per_error).any())
-    assert not(np.isnan(non_zero_per_error).any())
-
-    per_error         = np.concatenate((non_zero_per_error, zero_per_error))
-    per_error         = np.mean(per_error) * 100
-
-    return per_error
-
 def calculate_y_LOD(X_train, y_train):
     """
         This function calculates the Limit of Detection for the linear model
@@ -121,13 +99,14 @@ def tsen_pca_viz(data:List[pd.DataFrame], batch_labels:List[str], labels:List[st
     else: plt.show()
 
 
-def calculate_per_diff(model:BaseEstimator, 
+def calculate_per_diff_KFold(model:BaseEstimator, 
                        X:pd.DataFrame, 
                        y:pd.Series, 
-                       kf:KFold, 
-                       y_LOD:float) -> np.float64:
+                       y_LOD:float,
+                       kf:KFold
+                       ) -> np.float64:
     """
-        This function calculates the % difference for the given model and the input data.
+        This function calculates the % difference for KFold.
     """
      
     per_diff_all = []
@@ -140,30 +119,43 @@ def calculate_per_diff(model:BaseEstimator,
         y_train, y_test = y.to_numpy()[train_index], y.to_numpy()[test_index]
     
         model_.fit(X_train, y_train)
-        
-        mask           = (y_test != 0)    # Non Zero Concentration
-        zero_mask      = ~(mask)          # Zero Concentration
+        y_pred = model_.predict(X_test)
 
-        y_pred         = model_.predict(X_test)
-        y_pred         = np.maximum(y_pred, 0.0)
-
-        # Only for non zero concentration
-        non_zero_per_error = np.abs(y_test[mask] - y_pred[mask])/(0.5*(y_test[mask] + y_pred[mask]))
-        
-        # zero concentration
-        zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) / y_LOD
-
-        assert not(np.isnan(zero_per_error).any())
-        assert not(np.isnan(non_zero_per_error).any())
-
-        per_error         = np.concatenate((non_zero_per_error, zero_per_error))
-        per_error         = np.mean(per_error) * 100
-
-        assert not(np.isnan(per_error)) # To check if any output is invalid or nan
+        per_error = calculate_per_diff(y_test, y_pred, y_LOD)
         per_diff_all.append(per_error)
 
     
     return np.array(per_diff_all).mean()
+
+def calculate_per_diff(y_test:pd.Series, 
+                       y_pred:np.array, 
+                       y_LOD:float) -> np.float64:
+    
+    """
+        This function calculates the percentage difference for the given model and the input data.
+    """
+   
+    mask           = (y_test != 0)    # Non Zero Concentration
+    zero_mask      = ~(mask)          # Zero Concentration
+
+    # y_pred[y_pred<1.36]         = 0.0
+    y_pred         = np.maximum(y_pred, 0.0)
+
+    # Only for non zero concentration
+    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask]) * (2 / (y_test[mask] + y_pred[mask]))
+        
+    # zero concentration
+    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) *  (2 / (y_LOD + y_pred[zero_mask]))
+
+    assert not(np.isnan(zero_per_error).any())
+    assert not(np.isnan(non_zero_per_error).any())
+
+    per_error         = np.concatenate((non_zero_per_error, zero_per_error))
+    per_error         = np.mean(per_error) * 100
+
+    assert not(np.isnan(per_error)) # To check if any output is invalid or nan
+
+    return per_error
     
 
 def calculate_r2_score(model:BaseEstimator, 

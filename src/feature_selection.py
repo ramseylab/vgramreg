@@ -12,7 +12,7 @@ from sklearn.model_selection import KFold
 from typing import Tuple
 
 from src.load_models import select_model
-from src.utils import find_adj_score, calculate_y_LOD, calculate_r2_score, calculate_per_diff, calculate_combined_r2_and_per_diff
+from src.utils import find_adj_score, calculate_y_LOD, calculate_r2_score, calculate_per_diff_KFold, calculate_combined_r2_and_per_diff
 
 class ModelSelection():
     def __init__(self, model_name:str, X_train:pd.DataFrame, y_train:pd.Series):
@@ -26,11 +26,24 @@ class ModelSelection():
         with open(path, 'wb') as f:
             pickle.dump(self.model, path) 
 
-    def find_score(self, kf:KFold, features:list) -> np.ndarray:
-        return np.array(calculate_r2_score(self.model, self.X_train[features], self.y_train, kf))
+    def find_score(self, 
+                   kf:KFold, 
+                   features:list, 
+                   metric:str,
+                   use_adjusted_r2:bool) -> np.ndarray:
+        
+        if 'r2'in metric:
+            return calculate_r2_score(self.model, self.X_train[features], self.y_train, kf, use_adjusted_r2=use_adjusted_r2)
+
+        elif metric=='per_diff':  
+            return calculate_per_diff_KFold(self.model, self.X_train[features], self.y_train, kf, self.y_LOD)
+
+        else:
+            return calculate_combined_r2_and_per_diff(self.model, self.X_train[features], self.y_train, kf, self.y_LOD, use_adjusted_r2=use_adjusted_r2)
+
     
     def find_per_diff(self, kf:KFold, features:list) -> np.ndarray:
-        return np.array(calculate_per_diff(self.model, self.X_train[features], self.y_train, kf, self.y_LOD))
+        return np.array(calculate_per_diff_KFold(self.model, self.X_train[features], self.y_train, kf, self.y_LOD))
     
     def fit(self, features:list) -> None:
         self.model.fit(self.X_train[features], self.y_train)
@@ -54,15 +67,8 @@ class ModelSelection():
                 if feature not in self.selected_features:
                     testing_feature = self.selected_features + [feature]
                     
-                    if 'r2'in metric:
-                        score = calculate_r2_score(self.model, self.X_train[testing_feature], self.y_train, kf, use_adjusted_r2=use_adjusted_r2)
-
-                    elif metric=='per_diff':  
-                        score = calculate_per_diff(self.model, self.X_train[testing_feature], self.y_train, kf, self.y_LOD)
-
-                    else:
-                        score = calculate_combined_r2_and_per_diff(self.model, self.X_train[testing_feature], self.y_train, kf, self.y_LOD, use_adjusted_r2=use_adjusted_r2)
-
+                    score = self.find_score(kf, testing_feature, metric, use_adjusted_r2)
+        
                     one_line_score.append(score)
                     one_line_features.append(feature)
            
