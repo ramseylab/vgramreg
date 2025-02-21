@@ -2,8 +2,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import seaborn as sns
 
 from typing import Tuple
+
+def create_correlation_matrix(X_correl:pd.DataFrame, OUTPUT_PATH='') -> None:
+    """
+        This Function creates a correlation heat map
+    """
+    # Remove the univariate from the column name
+    X_correl.columns = [name.replace('univariate, ', '') for name in X_correl.columns.to_list()]
+
+    # Calculate the correlation matrix
+    correlation_matrix = X_correl.corr()
+
+    # Plot the correlation matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
+    plt.title('Correlation Matrix')
+    
+    if OUTPUT_PATH!='':
+        os.makedirs(OUTPUT_PATH, exist_ok=True)
+        plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
 
 def pad_values(feature_:list, scores:list, max_val:int) -> Tuple[list, list]:
     pad_value = max_val - len(feature_)

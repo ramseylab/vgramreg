@@ -1,7 +1,7 @@
 from sklearn.gaussian_process.kernels import Matern, RBF
 
 DATASET_PATH = '/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML4'
-OUTPUT_PATH  = 'Outputs'
+OUTPUT_PATH  = 'vgramreg/results/Journal_paper/'
 
 name_conversion = {'Linear':'multivariate', 'std':'univariate, std(S)', 'mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
