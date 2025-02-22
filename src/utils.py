@@ -38,10 +38,10 @@ def calculate_y_LOD(X_train, y_train):
         This function calculates the Limit of Detection for the linear model
     """
     model_yLOD = LinearRegression()
-    model_yLOD.fit(X_train[['std(S)']], y_train)          # Selecting standard deviation of sample as a feature
+    model_yLOD.fit(X_train[['max(S)']], y_train)          # Selecting standard deviation of sample as a feature
     
     S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
-    SD = X_train['std(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
+    SD = X_train['max(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
 
     return 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
 
@@ -188,7 +188,7 @@ def calculate_r2_score_KFold(model:BaseEstimator,
         y_pred_all += y_pred.tolist()
         y_test_all += y_test.tolist()
 
-    score         = calculate_r2_score(y_test_all, y_pred_all)      # It is a numpy float
+    score         = calculate_r2_score(y_test_all, y_pred_all)               # It is a numpy float
     adj_score     = find_adj_score(len(y_pred_all), X_train.shape[1], score) # N, P, R2 score
 
     return np.float64(adj_score)if use_adjusted_r2 else np.float64(score)           # Numpy Float
