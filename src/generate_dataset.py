@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath('C:\\Users\\aramz\\vgramreg\\src'))  # Adjust for your actual path
+sys.path.append(r'C:/Users/aramz/vgramreg/src/vg2signal.py')
+sys.path.append(r'C:/Users/aramz/vgramreg/src/config.py')
 
 import scipy
 import numpy as np
@@ -12,8 +13,8 @@ from glob import glob
 from typing import Tuple
 from tqdm import tqdm
 
-from src.vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
-from src.config import DATASET_PATH, OUTPUT_PATH
+from vg2signal import read_raw_vg_as_df, make_smoother, make_detilter, make_signal_getter, make_shoulder_getter
+from config import DATASET_PATH, OUTPUT_PATH
 
 def find_first_derivative_peaks(V: np.ndarray, Signal: np.ndarray):
   
