@@ -1,6 +1,6 @@
 from sklearn.gaussian_process.kernels import Matern, RBF
 
-DATASET_PATH = 'C:/Users/aramz/OneDrive/Documents/Fu Lab/ML2 Data'
+DATASET_PATH = 'C:/Users/aramz/OneDrive/Documents/Fu Lab/2025_01_25_MLDataSet6'
 OUTPUT_PATH  = 'C:/Users/aramz/OneDrive/Documents/Fu Lab/ML 6 Excel'
 
 name_conversion = {'Linear':'multivariate', 'std':'univariate, std(S)', 'mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
