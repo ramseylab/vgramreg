@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '../')
+sys.path.insert(0, os.path.abspath('C:\Users\aramz\vgramreg\src'))  # Adjust for your actual path
 
 import scipy
 import os
