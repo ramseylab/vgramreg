@@ -28,23 +28,6 @@ class ModelSelection():
         with open(path, 'wb') as f:
             pickle.dump(self.model, path) 
 
-    def find_score(self, 
-                   y_true:np.array, 
-                   y_pred:np.array, 
-                   y_LOD:np.float64,
-                   metric:str, 
-                   use_adjusted_r2:bool,
-                   feature_len:int):
-        
-        if metric == 'r2':
-            score = calculate_r2_score(y_true, y_pred)
-            if use_adjusted_r2:
-                score = find_adj_score(len(y_true), feature_len, score)
-            return score
-        
-        elif metric == 'per_diff': return calculate_per_diff(y_true, y_pred, y_LOD)
-        else: return calculate_combined_r2_and_per_diff(y_true, y_pred, y_LOD)
-
     def find_score_KFold(self, 
                    kf:KFold, 
                    features:list, 
@@ -106,13 +89,15 @@ class ModelSelection():
                                   metric:str, 
                                   use_adjusted_r2:bool) -> Tuple:
         
+    
         all_params_df = self.list_all_parameters(PARAMS_GRID[self.model_name])
         all_params_df['score'] = all_params_df.apply(self.calculate_score_hyperparameter, axis=1, args=(metric, testing_feature,kf,use_adjusted_r2))
 
-        if metric=='per_diff': best_features = all_params_df.loc[all_params_df['score'].idxmin()]
-        else: best_features = all_params_df.loc[all_params_df['score'].idxmax()]
-        best_score    = best_features['score']
-        return best_features.drop('score').to_dict(), best_score
+        if metric=='per_diff': best_parameters = all_params_df.loc[[all_params_df['score'].idxmin()]]
+        else: best_parameters = all_params_df.loc[[all_params_df['score'].idxmax()]]
+        
+        best_score      = best_parameters['score'].to_list()[0]
+        return best_parameters.drop('score', axis=1).to_dict(orient='records')[0], best_score
 
 
     def find_best_features(self, 
@@ -140,12 +125,14 @@ class ModelSelection():
                 if feature not in self.selected_features:
                     testing_feature = self.selected_features + [feature]
 
-                    if tune_hyperparameter:
-                        best_param, score = self.find_best_score_hyperparameter_KFold(kf, testing_feature, metric, use_adjusted_r2)
+                    #Fine tune the hyperparametrs with R2
+                    if (tune_hyperparameter) and (len(PARAMS_GRID[self.model_name].keys())>0):
+                        best_param, _ = self.find_best_score_hyperparameter_KFold(kf, testing_feature, 'r2', use_adjusted_r2=False)
+                   
+                        self.model.set_params(**best_param)   # Set the best hyperparameters
                         one_line_best_params.append(best_param)
 
-                    else:
-                        score = self.find_score_KFold(kf, testing_feature, metric, use_adjusted_r2)
+                    score = self.find_score_KFold(kf, testing_feature, metric, use_adjusted_r2)
         
                     one_line_score.append(score)
                     one_line_features.append(feature)
@@ -161,7 +148,7 @@ class ModelSelection():
 
             sel_one_line_feature    = one_line_features[best_socre_ind] 
 
-            if tune_hyperparameter: sel_one_best_params     = one_line_best_params[best_socre_ind]
+            if (tune_hyperparameter) and (len(PARAMS_GRID[self.model_name].keys())>0): sel_one_best_params     = one_line_best_params[best_socre_ind]
 
             temp = {}
             for key, score in zip(one_line_features, one_line_score):
@@ -173,7 +160,7 @@ class ModelSelection():
                 if one_line_best_score <= self.best_score:
                     self.best_score = one_line_best_score
                     self.selected_features.append(sel_one_line_feature)
-                    if tune_hyperparameter: self.all_best_params.append(sel_one_best_params)
+                    if (tune_hyperparameter) and (len(PARAMS_GRID[self.model_name].keys())>0): self.all_best_params.append(sel_one_best_params)
                     self.all_feature_scores.append(temp)
 
                     flag = False
@@ -184,7 +171,7 @@ class ModelSelection():
                 if one_line_best_score >= self.best_score:
                     self.best_score = one_line_best_score
                     self.selected_features.append(sel_one_line_feature)
-                    if tune_hyperparameter: self.all_best_params.append(sel_one_best_params)
+                    if (tune_hyperparameter) and (len(PARAMS_GRID[self.model_name].keys())>0): self.all_best_params.append(sel_one_best_params)
                     self.all_feature_scores.append(temp)
                     flag = False
 

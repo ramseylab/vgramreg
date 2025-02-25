@@ -33,6 +33,22 @@ def verify_batch_label_dist(y):
 def find_adj_score(N: int, P: int, R_2: float) -> float:
     return (1 - (1 - R_2)*(N - 1)/(N - P - 1))
 
+def find_score(y_true:np.array, 
+                y_pred:np.array, 
+                y_LOD:np.float64,
+                metric:str, 
+                use_adjusted_r2:bool,
+                feature_len:int):
+        
+        if metric == 'r2':
+            score = calculate_r2_score(y_true, y_pred)
+            if use_adjusted_r2:
+                score = find_adj_score(len(y_true), feature_len, score)
+            return score
+        
+        elif metric == 'per_diff': return calculate_per_diff(y_true, y_pred, y_LOD)
+        else: return calculate_combined_r2_and_per_diff(y_true, y_pred, y_LOD)
+
 def calculate_y_LOD(X_train, y_train):
     """
         This function calculates the Limit of Detection for the linear model
