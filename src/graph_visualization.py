@@ -264,7 +264,9 @@ def visualization_testing_dataset(dict_:dict,
 
 def visualization_class_stratified(dict_, path_name):
     df_temp = pd.DataFrame(dict_)
-    ax = df_temp.plot(x='Models', y=list(dict_.keys())[1:], kind='bar', legend=False)
+    labels  = list(dict_.keys())
+    labels.remove('Models')
+    ax = df_temp.plot(x='Models', y=labels, kind='bar', legend=False)
     plt.legend()
     for i, p in enumerate(ax.patches):
         ax.annotate(str(round(p.get_height(), 1)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
@@ -273,4 +275,5 @@ def visualization_class_stratified(dict_, path_name):
     plt.xlabel('Models')
     plt.ylabel('% Error')
     if path_name!='':
+        os.makedirs(os.path.dirname(path_name), exist_ok=True)
         plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
