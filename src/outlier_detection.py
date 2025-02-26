@@ -36,9 +36,9 @@ def find_outliers_remove(feature_select_outlier:str,
         above_upper_bound = df_data[[feature_select_outlier, 'file']][(df_data[feature_select_outlier]>upper_bound) & (df_data['label']==i)]
         above_lower_bound = df_data[[feature_select_outlier, 'file']][(df_data[feature_select_outlier]<lower_bound) & (df_data['label']==i)]
 
-        df_data = df_data[((df_data[feature_select_outlier]<=upper_bound)&\
-                          (df_data[feature_select_outlier]>=lower_bound)&\
-                          (df_data['label']==i)) | df_data['label']!=i]
+        df_data = df_data[((df_data[feature_select_outlier]<upper_bound)&\
+                          (df_data[feature_select_outlier]>lower_bound)&\
+                          (df_data['label']==i)) | (df_data['label']!=i)]
         
         outliers[i]['above'] += above_upper_bound['file'].apply(lambda x: x.split('/')[-1]).to_list()
         outliers[i]['below'] += above_lower_bound['file'].apply(lambda x: x.split('/')[-1]).to_list()
