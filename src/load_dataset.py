@@ -11,6 +11,7 @@ import seaborn as sns
 from typing import Tuple
 
 from src.config import DATASET_PATH, OUTPUT_PATH
+from src.graph_visualization import create_correlation_matrix
 
 def find_concentration_distribution(y: pd.Series) -> int:
     all_labels = y.tolist()
@@ -19,21 +20,6 @@ def find_concentration_distribution(y: pd.Series) -> int:
     for i in unique_: count[i] = all_labels.count(i)
     
     return count
-
-def create_correlation_matrix(X_correl:pd.DataFrame) -> None:
-
-    # Remove the univariate from the column name
-    X_correl.columns = [name.replace('univariate, ', '') for name in X_correl.columns.to_list()]
-
-    # Calculate the correlation matrix
-    correlation_matrix = X_correl.corr()
-
-    # Plot the correlation matrix
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
-    plt.title('Correlation Matrix')
-    os.makedirs(OUTPUT_PATH, exist_ok=True)
-    plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
      
 def select_normalizer(standardize_type):
     if standardize_type   == 'mean_std':scaler = StandardScaler() 
@@ -41,6 +27,68 @@ def select_normalizer(standardize_type):
     elif standardize_type == 'robust':  scaler = RobustScaler()
 
     return scaler
+
+def normalize_create_training_data(train, test, ouliners_to_remove=[], blank_norm=False, normalizer_type='mean_std'):
+
+    # Remove outlier if there any outlier in the list
+    train = train[train['file'].apply(lambda x: False if (x.split('/')[-1].replace('.txt', '') in ouliners_to_remove) else True)]
+              
+    train = train.reset_index(drop=True)
+    test  = test.reset_index(drop=True)
+    
+    X_train = train.drop(columns=['file']).copy()
+    X_test  = test.drop(columns=['file']).copy()
+
+    columns       = X_train.columns
+    
+    y_train = train['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+    y_test  = test['file'].apply(lambda x: int(x.split('_')[-2].replace('cbz','')))
+
+    assert (X_train.index.values == y_train.index.values).all()
+
+    if normalizer_type!=None:
+        scaler  = select_normalizer(normalizer_type)
+    
+        if blank_norm: scaler.fit(X_train[y_train==0])
+        else: scaler.fit(X_train)
+    
+        
+        X_train = pd.DataFrame(scaler.transform(X_train), columns=columns)
+        X_test  = pd.DataFrame(scaler.transform(X_test),  columns=columns)
+
+    else:
+        scaler = None
+
+    X_train.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+                        'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
+                    'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
+                    'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
+        }, inplace = True)
+
+    X_test.rename(columns={"PH": 'univariate, max(S)', 'signal_std':'univariate, std(S)', 'signal_mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
+                        'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
+                    'dS_dV_peak_diff':'univariate, max(dS/dV) - min(dS/dV)', \
+                    'peak V':'univariate, V_max(S)', 'dS_dV_max_V':'univariate, V_max(dS/dV)', 'dS_dV_min_V':'univariate, V_min(dS/dV)',\
+        }, inplace = True)
+
+   
+
+    return (X_train, X_test, y_train, y_test), scaler
+
+def load_dataset_train_test_splitted(filename, load_dataset_name=['ML1', 'ML2', 'ML4']):
+    dataset = {}
+
+    if 'ML1' in load_dataset_name:
+        dataset['ML1'] = pd.read_excel(f'/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML1_ML2/2024_02_19_ML1/{filename}.xlsx')
+
+    if 'ML2' in load_dataset_name:
+         dataset['ML2'] = pd.read_excel(f'/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML1_ML2/2024_02_22_ML2/{filename}.xlsx')
+    
+    if 'ML4' in load_dataset_name:
+        dataset['ML4'] = pd.read_excel(f'/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML4/{filename}.xlsx')
+
+    return dataset
+
 
 def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, standardize_type='', eval_correl_matrix=False, split=True, test_nor_separate=False, showFileName=False) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     if dataset_path==None: dataset_path = DATASET_PATH
@@ -109,7 +157,7 @@ def load_dataset(dataset_path=None, normalization=True, normalize_blanks=False, 
 
     # Generate Feature Correlation heat map
     if eval_correl_matrix:
-        create_correlation_matrix(X_train.copy())
+        create_correlation_matrix(X_train.copy(), OUTPUT_PATH)
     
     print("######Data Distribution:#########")
     print("Training", find_concentration_distribution(y_train))

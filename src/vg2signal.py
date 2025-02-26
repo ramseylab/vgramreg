@@ -98,10 +98,12 @@ def make_shoulder_getter(vstart: float,
         if len(roots_ddd) == 1:
             v_peak = float(roots_ddd[0])
         elif len(roots_ddd) > 1:
-            minsecond = min(spl_mdl_dd_pred)
-            idx = (numpy.abs(spl_mdl_dd_pred - minsecond)).argmin()
-            vin = list(v[v_in])
-            v_peak = vin[idx]
+            idx       = spl_mdl_dd(np.array(roots_ddd)).argmin()
+            v_peak    = roots_ddd[idx]
+            # minsecond = min(spl_mdl_dd_pred)
+            # idx = (numpy.abs(spl_mdl_dd_pred - minsecond)).argmin()
+            # vin = list(v[v_in])
+            # v_peak = vin[idx]
         else:
             minsecond = min(spl_mdl_dd_pred)
             idx = (numpy.abs(spl_mdl_dd_pred - minsecond)).argmin()

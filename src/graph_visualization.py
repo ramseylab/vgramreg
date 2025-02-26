@@ -2,8 +2,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import seaborn as sns
 
 from typing import Tuple
+
+def create_correlation_matrix(X_correl:pd.DataFrame, OUTPUT_PATH='') -> None:
+    """
+        This Function creates a correlation heat map
+    """
+    # Remove the univariate from the column name
+    X_correl.columns = [name.replace('univariate, ', '') for name in X_correl.columns.to_list()]
+
+    # Calculate the correlation matrix
+    correlation_matrix = X_correl.corr()
+
+    # Plot the correlation matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
+    plt.title('Correlation Matrix')
+    
+    if OUTPUT_PATH!='':
+        os.makedirs(OUTPUT_PATH, exist_ok=True)
+        plt.savefig(f'{OUTPUT_PATH}/feature_correlation_matrix.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
 
 def pad_values(feature_:list, scores:list, max_val:int) -> Tuple[list, list]:
     pad_value = max_val - len(feature_)
@@ -31,15 +51,34 @@ def feature_selection_tabularize(feature_scores: dict) -> pd.DataFrame:
 
     return df
 
+def get_best_score_per_feature_count(feature_scores: dict, only_best=True, higher_better=True):
+    best_score_feature_set = []
+    feature_scores = [feature_scores[-1]] if only_best else feature_scores
+
+    for ind, feature_set in enumerate(feature_scores):
+        feature_comb = list(feature_set.keys())
+        scores       = list(feature_set.values())
+        best_ind     = np.argmax(scores) if higher_better else np.argmin(scores)
+
+        best_score_feature_set.append((feature_comb[best_ind], scores[best_ind]))
+
+    return best_score_feature_set[-1] if only_best else best_score_feature_set
+
+
+    
 def visualize_highest_score_feature_selection(all_dataset_feature_score: dict, 
                                               path_name:str, 
                                               model_name_conversion: dict, 
-                                              r2_score=True, 
+                                              higher_better=True, 
                                               adj_score=False,
                                               only_one_multivariate=True, 
                                               legends=False, 
                                               extra_symbol=None) -> pd.DataFrame:
 
+    """
+        This function takes the scores from the feature selection dictionary and plots the bargraph with the best features 
+        comparing for each model with the given performance metrics
+    """
     os.makedirs(os.path.dirname(path_name), exist_ok=True)
     plt.figure(figsize=(35, 15))
 
@@ -96,20 +135,20 @@ def visualize_highest_score_feature_selection(all_dataset_feature_score: dict,
 
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
-    symbols      = {'multivariate':'o', 'univariate, std(S)':'^', 'univariate, mean(S)':'x',\
-                 'univariate, area(S)':'v', \
-                 'univariate, area(dS/dV)':'D', \
-                 'univariate, max(S)':'*', \
+    symbols      = {'multivariate':'o', 'std(S)':'^', 'mean(S)':'x',\
+                 'area(S)':'v', \
+                 'area(dS/dV)':'D', \
+                 'max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
                  'Gaussian Process': 'v',
-                 'univariate, max(dS/dV)': 'v',\
+                 'max(dS/dV)': 'v',\
                  'Linear': 'x',
                  'SVM':'*',
                  'Ridge':'+',
                  'Lasso':'s'}
     
-    decimal_prec = 3 if r2_score else 1
+    decimal_prec = 3 if higher_better else 1
 
     for i, p in enumerate(ax.patches):
         ax.annotate(str(round(p.get_height(), decimal_prec)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
@@ -168,15 +207,15 @@ def visualization_testing_dataset(dict_:dict,
     if not (only_one_multivariate): df['Models'] = df['Models'].apply(lambda x: model_name_conversion[x] if (x in model_name_conversion) else x )
     ax = df[['Models', 'Scores']].plot(x='Models', y=['Scores'], kind='bar', legend=False, color='0.7', edgecolor='black', fontsize=fontsize)
 
-    symbols      = {'multivariate':'o', 'univariate, std(S)':'1', 'univariate, mean(S)':'x',\
-                 'univariate, area(S)':'2', \
-                 'univariate, area(dS/dV)':'D', \
-                 'univariate, max(S)':'*', \
+    symbols      = {'multivariate':'o', 'std(S)':'1', 'mean(S)':'x',\
+                 'area(S)':'2', \
+                 'area(dS/dV)':'D', \
+                 'max(S)':'*', \
                  'KNN': 'o',\
                  'Random Forest': '^',\
                  'RF': '^',\
                  'Gaussian Process': 'v',\
-                 'univariate, max(dS/dV)': '3',\
+                 'max(dS/dV)': '3',\
                  'GP': 'v',\
                  'Linear': 'x',
                  'SVM':'*',
@@ -222,3 +261,19 @@ def visualization_testing_dataset(dict_:dict,
 
     plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
     plt.clf()
+
+def visualization_class_stratified(dict_, path_name):
+    df_temp = pd.DataFrame(dict_)
+    labels  = list(dict_.keys())
+    labels.remove('Models')
+    ax = df_temp.plot(x='Models', y=labels, kind='bar', legend=False)
+    plt.legend()
+    for i, p in enumerate(ax.patches):
+        ax.annotate(str(round(p.get_height(), 1)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
+                ha='center', va='center', xytext=(0, 10), textcoords='offset points',  rotation='vertical', fontsize=10, )
+
+    plt.xlabel('Models')
+    plt.ylabel('% Error')
+    if path_name!='':
+        os.makedirs(os.path.dirname(path_name), exist_ok=True)
+        plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')

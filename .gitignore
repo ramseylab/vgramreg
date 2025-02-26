@@ -1,6 +1,11 @@
 Outputs/*
 ML1_ML2/*
 ML4/*
+dataset/*
+old_dataset/*
+models/*
+results/*
+weights/*
 src/__pycache__/*
 *.zip
 *.png

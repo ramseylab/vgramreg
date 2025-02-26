@@ -1,7 +1,7 @@
 from sklearn.gaussian_process.kernels import Matern, RBF
 
-DATASET_PATH = '/Users/sangam/Desktop/Epilepsey/Code/vgramreg/ML1_ML2'
-OUTPUT_PATH  = 'Outputs'
+DATASET_PATH = '/Users/sangam/Desktop/Epilepsey/Code/vgramreg/dataset/ML4'
+OUTPUT_PATH  = 'vgramreg/results/Journal_paper/'
 
 name_conversion = {'Linear':'multivariate', 'std':'univariate, std(S)', 'mean':'univariate, mean(S)', 'peak area':'univariate, area(S)', \
                         'dS_dV_area':'univariate, area(dS/dV)', 'dS_dV_max_peak':'univariate, max(dS/dV)', 'dS_dV_min_peak':'univariate, min(dS/dV)',\
@@ -37,8 +37,8 @@ models_features_r2 = {
                 #       'SVM':   ['univariate, std(S)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)'],
                 #       'Lasso': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
                 #       'Ridge': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature']
-                'Linear': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
-                'KNN': ['univariate, max(S)', 'univariate, std(S)', 'univariate, mean(S)', 'univariate, V_max(S)'],
+                'Linear': ['univariate, std(S)', 'vcenter', 'peak curvature', 'univariate, V_min(dS/dV)'],
+                'KNN': ['univariate, mean(S)', 'univariate, V_max(dS/dV)'],
                 'RF': ['univariate, std(S)', 'univariate, max(dS/dV) - min(dS/dV)'],
                 'GP': ['univariate, std(S)'],
                 'SVM': ['univariate, area(S)', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)', 'vcenter', 'univariate, area(dS/dV)', 'univariate, mean(S)'],
@@ -102,6 +102,36 @@ params = {
     'Ridge': {'alpha':0.01},
     'Lasso': {'alpha':0.001}
 }
+
+# Parameter Grids
+PARAMS_GRID = {'SVM':{
+                    'C': [1, 10, 15, 20, 100],
+                    'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01],
+                    'kernel': ['rbf']},
+              
+              'RF': {
+                    'n_estimators': [80, 100, 120],
+                    'max_depth': [5, 10, 15],
+                    'min_samples_split': [6, 8, 10, 16,20],
+                    'min_samples_leaf': [2,4,6] 
+                     },
+              
+              'KNN': {
+                        'n_neighbors': [3, 5, 6, 7, 8, 9],
+                        'weights': ['uniform', 'distance'],
+                        'metric': ['euclidean', 'manhattan']
+                    },
+              
+              'GP': {'kernel': [1.0 * RBF(length_scale=1.0), 
+                                1.0 * RBF(length_scale=0.5), 
+                                1.0 * RBF(length_scale=1.5), 
+                                1.0 * RBF(length_scale=2.0),
+                                1.0 * RBF(length_scale=2.5),
+                                1.0 * Matern(length_scale=1.0, nu=1.5)],
+                     'alpha': [0.001, 0.01, 0.1, 1, 1.5, 2, 2.5]},
+               'Ridge': {'alpha': [0.0001, 0.0005, 0.001, 0.003, 0.005, 0.01, 0.1, 1.0]},
+               'Lasso': {'alpha': [0.00001, 0.00003, 0.00005, 0.0001, 0.0003, 0.0005, 0.001]}
+              }
 
 # Finetunin after feature selection
 # params = {
