@@ -105,19 +105,20 @@ params = {
 
 # Parameter Grids
 PARAMS_GRID = {'SVM':{
-                    'C': [1, 10, 15, 20, 100],
-                    'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01],
-                    'kernel': ['rbf']},
+                    'C': [10, 15, 20, 100, 150, 200],
+                    'gamma': [0.005, 0.01, 0.03, 0.1, 1.0, 1.5],
+                    'kernel': ['rbf', 'poly', 'sigmoid']},
               
               'RF': {
-                    'n_estimators': [80, 100, 120],
-                    'max_depth': [5, 10, 15],
-                    'min_samples_split': [6, 8, 10, 16,20],
-                    'min_samples_leaf': [2,4,6] 
+                    'n_estimators': [80, 100, 120, 150],
+                    'max_depth': [10, 15, 20, 25, 30],
+                    'min_samples_split': [6, 8, 10, 12, 14, 16],
+                    'min_samples_leaf': [1, 2, 3, 5, 6], 
+                    'max_features': [2, 3, 4, 'None']
                      },
               
               'KNN': {
-                        'n_neighbors': [3, 5, 6, 7, 8, 9],
+                        'n_neighbors': [2, 3, 5, 6, 7, 8, 9, 12],
                         'weights': ['uniform', 'distance'],
                         'metric': ['euclidean', 'manhattan']
                     },
