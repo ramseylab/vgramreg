@@ -13,4 +13,6 @@ src/__pycache__/*
 *.txt
 *.xlsx
 *.bin
+*.pth
+weights/*
 
