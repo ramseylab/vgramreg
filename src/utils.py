@@ -13,7 +13,7 @@ from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 
-from pycombat import Combat
+# from pycombat import Combat
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -288,7 +288,11 @@ def normalizer_inference_dataset(dataset, normalizer_type='mean_std'):
     return X, y
 
 
-def evaluate_score_class_stratified(y_pred:np.ndarray, y_test:pd.Series, score='r2', y_LOD=0.9117010154341669):
+def evaluate_score_class_stratified(y_pred:np.ndarray, 
+                                    y_test:pd.Series, 
+                                    score='r2', 
+                                    y_LOD=0.9117010154341669):
+    
     y_test = y_test.reset_index(drop=True)
     
     labels = y_test.unique()
@@ -308,7 +312,7 @@ def evaluate_score_class_stratified(y_pred:np.ndarray, y_test:pd.Series, score='
         residue = y_test_label.to_numpy() - y_pred_label
 
         if score=='r2': scores[label] = {'score': r2_score(y_test_label,  y_pred_label),        'residue':  residue} 
-        else:  scores[label] = {'score': per_error(y_test_label, y_pred_label, y_LOD), 'residue': residue } 
+        else:  scores[label] = {'score': calculate_per_diff(y_test_label, y_pred_label, y_LOD), 'residue': residue } 
     
     return scores
 

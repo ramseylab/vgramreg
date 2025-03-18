@@ -105,16 +105,16 @@ params = {
 
 # Parameter Grids
 PARAMS_GRID = {'SVM':{
-                    'C': [10, 15, 20, 100, 150, 200],
+                    'C': [15, 20, 100, 150, 200],
                     'gamma': [0.005, 0.01, 0.03, 0.1, 1.0, 1.5],
-                    'kernel': ['rbf', 'poly', 'sigmoid']},
+                    'kernel': ['rbf', 'sigmoid']},
               
               'RF': {
                     'n_estimators': [80, 100, 120, 150],
-                    'max_depth': [10, 15, 20, 25, 30],
+                    'max_depth': [10, 15, 20, 25],
                     'min_samples_split': [6, 8, 10, 12, 14, 16],
-                    'min_samples_leaf': [1, 2, 3, 5, 6], 
-                    'max_features': [2, 3, 4, 'None']
+                    'min_samples_leaf': [1, 2, 3, 5], 
+                    'max_features': [2, 3, 5]
                      },
               
               'KNN': {
@@ -130,6 +130,8 @@ PARAMS_GRID = {'SVM':{
                                 1.0 * RBF(length_scale=2.5),
                                 1.0 * Matern(length_scale=1.0, nu=1.5)],
                      'alpha': [0.001, 0.01, 0.1, 1, 1.5, 2, 2.5]},
+
+               'Linear': {},
                'Ridge': {'alpha': [0.0001, 0.0005, 0.001, 0.003, 0.005, 0.01, 0.1, 1.0]},
                'Lasso': {'alpha': [0.00001, 0.00003, 0.00005, 0.0001, 0.0003, 0.0005, 0.001]}
               }

@@ -277,3 +277,22 @@ def visualization_class_stratified(dict_, path_name):
     if path_name!='':
         os.makedirs(os.path.dirname(path_name), exist_ok=True)
         plt.savefig(f'{path_name}', dpi=300, bbox_inches='tight')
+
+def plot_model_vs_score(score_df:dict, 
+                       metric='',
+                       save_path='') -> None:     
+    
+
+    ax = score_df.plot(x='Models', y="Scores", kind='bar', legend=False)
+    plt.legend()
+    for i, p in enumerate(ax.patches):
+        ax.annotate(str(round(p.get_height(), 4)), (p.get_x() + p.get_width() / 2., 0.3 * p.get_height()),
+                ha='center', va='center', xytext=(0, 10), textcoords='offset points',  rotation='vertical', fontsize=10, )
+    
+    plt.xticks(rotation=45, ha='right')
+    plt.xlabel('Feature set')
+    plt.ylabel(metric)
+    plt.legend().set_visible(False)
+    if save_path!='':
+        plt.savefig(f'{save_path}', dpi=300, bbox_inches='tight')
+    
