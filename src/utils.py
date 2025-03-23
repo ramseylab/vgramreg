@@ -59,7 +59,7 @@ def calculate_y_LOD(X_train, y_train):
     S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
     SD = X_train['max(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
 
-    return 2.636369 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
+    return 3 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
 
 
 def tsen_pca_viz(data:List[pd.DataFrame], batch_labels:List[str], labels:List[str], filename=''):
@@ -288,8 +288,8 @@ def normalizer_inference_dataset(dataset, normalizer_type='mean_std'):
     return X, y
 
 
-def evaluate_score_class_stratified(y_pred:np.ndarray, 
-                                    y_test:pd.Series, 
+def evaluate_score_class_stratified(y_test:pd.Series, 
+                                    y_pred:np.ndarray,
                                     score='r2', 
                                     y_LOD=0.9117010154341669):
     
@@ -315,4 +315,5 @@ def evaluate_score_class_stratified(y_pred:np.ndarray,
         else:  scores[label] = {'score': calculate_per_diff(y_test_label, y_pred_label, y_LOD), 'residue': residue } 
     
     return scores
+
 
