@@ -158,10 +158,10 @@ def calculate_per_diff(y_test:pd.Series,
     y_pred         = np.maximum(y_pred, 0.0)
 
     # Only for non zero concentration
-    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask]) * (2 / (y_test[mask] + y_pred[mask]))
+    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask]) * (2 / y_test[mask])
         
     # zero concentration
-    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) *  (2 / (y_LOD + y_pred[zero_mask]))
+    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) *  (2 / y_LOD)
 
     assert not(np.isnan(zero_per_error).any())
     assert not(np.isnan(non_zero_per_error).any())
