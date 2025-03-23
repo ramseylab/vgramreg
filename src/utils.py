@@ -59,7 +59,7 @@ def calculate_y_LOD(X_train, y_train):
     S  = model_yLOD.coef_[0]                                                    # Slope of fitting line y=Sx + c 
     SD = X_train['max(S)'][(y_train==0).to_numpy()].std() # Standard deviation of S blank
 
-    return 3 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
+    return 3.0 * S * SD # We got the constant value from the -qt(0.01/2, 83) there number of blanks = 84 and we are using k-1 degree 84 -1 = 83
 
 
 def tsen_pca_viz(data:List[pd.DataFrame], batch_labels:List[str], labels:List[str], filename=''):
@@ -158,10 +158,10 @@ def calculate_per_diff(y_test:pd.Series,
     y_pred         = np.maximum(y_pred, 0.0)
 
     # Only for non zero concentration
-    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask]) * (2 / y_test[mask])
+    non_zero_per_error = np.abs(y_test[mask] - y_pred[mask]) * (1 / y_test[mask])
         
     # zero concentration
-    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) *  (2 / y_LOD)
+    zero_per_error     = np.abs(y_test[zero_mask] - y_pred[zero_mask]) *  (1 / y_LOD)
 
     assert not(np.isnan(zero_per_error).any())
     assert not(np.isnan(non_zero_per_error).any())
@@ -170,7 +170,7 @@ def calculate_per_diff(y_test:pd.Series,
     per_error         = np.mean(per_error) * 100
 
     assert not(np.isnan(per_error)) # To check if any output is invalid or nan
-
+    
     return per_error
     
 def calculate_r2_score(y_test:pd.Series, 
