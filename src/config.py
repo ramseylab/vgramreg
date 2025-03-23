@@ -105,16 +105,16 @@ params = {
 
 # Parameter Grids
 PARAMS_GRID = {'SVM':{
-                    'C': [15, 20, 100, 150, 200],
+                    'C': [15, 20, 100, 150, 200, 250, 300],
                     'gamma': [0.005, 0.01, 0.03, 0.1, 1.0, 1.5],
                     'kernel': ['rbf', 'sigmoid']},
               
               'RF': {
                     'n_estimators': [80, 100, 120, 150],
-                    'max_depth': [10, 15, 20, 25],
-                    'min_samples_split': [6, 8, 10, 12, 14, 16],
-                    'min_samples_leaf': [1, 2, 3, 5], 
-                    'max_features': [2, 3, 5]
+                    'max_depth': [5, 10, 15, 20, 25],
+                    'min_samples_split': [4, 6, 8, 10, 12, 14],
+                    'min_samples_leaf': [1, 3, 5], 
+                    'max_features': [2, 5, 7, 8]
                      },
               
               'KNN': {
