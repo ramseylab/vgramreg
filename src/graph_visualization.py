@@ -16,9 +16,21 @@ def create_correlation_matrix(X_correl:pd.DataFrame, OUTPUT_PATH='') -> None:
     # Calculate the correlation matrix
     correlation_matrix = X_correl.corr()
 
+    # Mask the upper triangle
+    mask = np.triu(np.ones_like(correlation_matrix, dtype=bool),k=1)
+
     # Plot the correlation matrix
     plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 12.5})
+    sns.heatmap(correlation_matrix, 
+                mask=mask, 
+                annot=True, 
+                cmap='coolwarm', 
+                fmt=".2f", 
+                square=True,
+                annot_kws={"size": 12.5})
+    
+    plt.xlabel('Features')
+    plt.ylabel('Features')
     plt.title('Correlation Matrix')
     
     if OUTPUT_PATH!='':
@@ -290,7 +302,7 @@ def plot_model_vs_score(score_df:dict,
                 ha='center', va='center', xytext=(0, 10), textcoords='offset points',  rotation='vertical', fontsize=10, )
     
     plt.xticks(rotation=45, ha='right')
-    plt.xlabel('Feature set')
+    plt.xlabel('Models')
     plt.ylabel(metric)
     plt.legend().set_visible(False)
     if save_path!='':
