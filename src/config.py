@@ -16,59 +16,34 @@ for i in name_conversion:
     
 model_name_conversion = {'Linear':'Linear', 'KNN':'KNN', 'RF':'Random Forest', 'GP':'Gaussian Process', 'multivariate':'multivariate', 'SVM':'SVM', 'Lasso':'Lasso', 'Ridge':'Ridge'}
 
+# Set best R2 feature for R2 metric
 models_features_r2 = {
-                      'univariate, mean(S)': ['univariate, mean(S)'], \
-                      'univariate, area(S)': ['univariate, area(S)'], \
-                      'univariate, std(S)':['univariate, std(S)'], \
-                      'univariate, max(S)':['univariate, max(S)'], \
-                      'univariate, V_max(dS/dV)':['univariate, V_max(dS/dV)'], \
-                      'univariate, V_max(S)':['univariate, V_max(S)'], \
-                      'vcenter':['vcenter'], \
-                      'univariate, V_min(dS/dV)':['univariate, V_min(dS/dV)'], \
-                      'univariate, min(dS/dV)':['univariate, min(dS/dV)'], \
-                      'univariate, max(dS/dV)':['univariate, max(dS/dV)'], \
-                      'univariate, max(dS/dV) - min(dS/dV)':['univariate, max(dS/dV) - min(dS/dV)'], \
-                      'peak curvature':['peak curvature'], \
-                      'univariate, area(dS/dV)':['univariate, area(dS/dV)'], \
-                #       'Linear':['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
-                #       'KNN':   ['univariate, area(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, std(S)'],
-                #       'RF':    ['univariate, std(S)', 'peak curvature', 'univariate, min(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)'],
-                #       'GP':    ['univariate, std(S)', 'univariate, V_max(dS/dV)', 'univariate, V_max(S)'],
-                #       'SVM':   ['univariate, std(S)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)'],
-                #       'Lasso': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
-                #       'Ridge': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature']
-                'Linear': ['univariate, std(S)', 'vcenter', 'peak curvature', 'univariate, V_min(dS/dV)'],
-                'KNN': ['univariate, mean(S)', 'univariate, V_max(dS/dV)'],
-                'RF': ['univariate, std(S)', 'univariate, max(dS/dV) - min(dS/dV)'],
-                'GP': ['univariate, std(S)'],
-                'SVM': ['univariate, area(S)', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)', 'vcenter', 'univariate, area(dS/dV)', 'univariate, mean(S)'],
-                'Lasso': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature'],
-                'Ridge': ['univariate, std(S)', 'univariate, V_max(S)', 'univariate, min(dS/dV)', 'univariate, V_max(dS/dV)', 'peak curvature', 'univariate, max(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)'],
-                    
+                'KNN':    ['min(dS/dV)', 'max(S)'], 
+                'Linear': ['min(dS/dV)', 'V_max(S)', 'f2', 'f1', 'V_max(dS/dV)'], 
+                'RF':     ['min(dS/dV)', 'area(S)', 'f2', 'V_max(dS/dV)'], 
+                'SVM':    ['min(dS/dV)', 'area(S)', 'vcenter', 'V_max(dS/dV)', 'max(dS/dV)'], 
+                'GP':     ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)'],
+                'xgboost': ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)']                    
                 }
 
 models_features_per = models_features_r2.copy()
+
+# Set best feature for per error metric
 models_features_per.update({
-                #       'Linear': ['univariate, std(S)', 'vcenter', 'univariate, area(dS/dV)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, V_min(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)', 'univariate, max(S)'],
-                #       'KNN':   ['univariate, std(S)', 'univariate, area(dS/dV)'],
-                #       'RF':    ['univariate, std(S)', 'univariate, max(dS/dV) - min(dS/dV)', 'peak curvature'],
-                #       'GP':    ['univariate, std(S)', 'univariate, V_max(dS/dV)', 'univariate, V_max(S)'],
-                #       'SVM':   ['univariate, area(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)', 'univariate, V_max(dS/dV)', 'univariate, V_max(S)', 'univariate, std(S)', 'univariate, max(S)', 'univariate, min(dS/dV)', 'univariate, area(S)', 'univariate, max(dS/dV)', 'univariate, mean(S)'],
-                #       'Lasso': ['univariate, std(S)', 'vcenter', 'univariate, area(dS/dV)', 'univariate, V_max(S)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, V_min(dS/dV)', 'univariate, max(dS/dV)', 'univariate, max(S)'],
-                #       'Ridge': ['univariate, std(S)', 'vcenter', 'univariate, area(dS/dV)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, V_min(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)', 'univariate, V_max(S)', 'univariate, max(S)']    
-                'Linear': ['univariate, std(S)', 'vcenter', 'univariate, area(dS/dV)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, V_min(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)', 'univariate, max(S)'],
-                'KNN': ['univariate, max(dS/dV) - min(dS/dV)', 'univariate, area(S)', 'univariate, min(dS/dV)', 'univariate, V_min(dS/dV)', 'univariate, V_max(dS/dV)', 'univariate, V_max(S)', 'vcenter', 'univariate, max(S)'],
-                'RF': ['univariate, std(S)', 'univariate, min(dS/dV)'],
-                'GP': ['univariate, std(S)', 'univariate, V_max(dS/dV)', 'univariate, V_max(S)', 'univariate, mean(S)'],
-                'SVM': ['univariate, max(dS/dV) - min(dS/dV)', 'univariate, area(S)', 'univariate, V_max(dS/dV)', 'univariate, max(dS/dV)', 'univariate, V_max(S)', 'univariate, V_min(dS/dV)', 'univariate, min(dS/dV)', 'vcenter', 'univariate, area(dS/dV)', 'univariate, max(S)', 'univariate, std(S)', 'univariate, mean(S)'],
-                'Lasso': ['univariate, std(S)', 'vcenter', 'univariate, area(dS/dV)', 'univariate, V_max(S)', 'peak curvature', 'univariate, V_max(dS/dV)', 'univariate, V_min(dS/dV)', 'univariate, max(dS/dV) - min(dS/dV)'],
-                'Ridge': ['univariate, std(S)', 'vcenter', 'univariate, V_max(S)', 'univariate, V_max(dS/dV)', 'univariate, min(dS/dV)'],
+                'KNN':    ['min(dS/dV)', 'max(S)'], 
+                'Linear': ['min(dS/dV)', 'V_max(S)', 'f2', 'f1', 'V_max(dS/dV)'], 
+                'RF':     ['min(dS/dV)', 'area(S)', 'f2', 'V_max(dS/dV)'], 
+                'SVM':    ['min(dS/dV)', 'area(S)', 'vcenter', 'V_max(dS/dV)', 'max(dS/dV)'], 
+                'GP':     ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)'],
+                'xgboost': ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)']
                 })
 
-paired_test = [('Linear', 'univariate, std(S)'), 
-               ('Linear', 'univariate, max(dS/dV)'),
-               ('univariate, max(dS/dV)', 'KNN'),
-               ('univariate, max(dS/dV)', 'RF'),
+paired_test = [('KNN', 'Linear'),
+               ('KNN', 'SVM'), 
+               ('KNN', 'GP'),
+               ('RF', 'GP'),
+               ('RF', 'Linear'),
+               ('RF', 'RF'),
                ('univariate, max(dS/dV)', 'GP'),
                ('Linear', 'KNN'),
                ('Linear', 'RF'), 
@@ -82,43 +57,38 @@ paired_test = [('Linear', 'univariate, std(S)'),
 #### Hyperparamters With Norm ############
 # Initial params
 params = {
-    'SVM': {'C':100, 
-            'gamma':0.01, 
-            'kernel':'rbf'
-            },
-    'RF': {'n_estimators': 200,
-            'max_depth': 10,
-            'min_samples_split': 10,
-            'min_samples_leaf': 2 
-            },
-    'KNN': {'metric': 'manhattan', 
-            'n_neighbors': 7, 
-            'weights': 'uniform'
-            },
-   'GP': {
-            'kernel': 1**2 * RBF(length_scale=2.5),
-            'alpha': 2
-    },
-    'Ridge': {'alpha':0.01},
-    'Lasso': {'alpha':0.001}
+    'SVM': {'C': 250, 
+            'gamma': 0.1, 
+            'kernel': 'rbf'},
+    'RF': {'n_estimators': 80, 
+           'max_depth': 5, 
+           'min_samples_split': 2, 
+           'min_samples_leaf': 1, 
+           'max_features': 2},
+    'KNN': {'n_neighbors': 12, 
+            'weights': 'distance', 
+            'metric': 'manhattan'},
+   'GP': {'kernel': 1**2 * RBF(length_scale=2.5), 
+          'alpha': 2.5},
+    'Linear': {}
 }
 
 # Parameter Grids
 PARAMS_GRID = {'SVM':{
-                    'C': [15, 20, 100, 150, 200, 250, 300],
+                    'C': [15.0, 20.0, 100.0, 150.0, 200.0, 250.0, 300.0],
                     'gamma': [0.005, 0.01, 0.03, 0.1, 1.0, 1.5],
                     'kernel': ['rbf', 'sigmoid']},
               
               'RF': {
-                    'n_estimators': [80, 100, 120, 150],
-                    'max_depth': [5, 10, 15, 20, 25],
-                    'min_samples_split': [4, 6, 8, 10, 12, 14],
-                    'min_samples_leaf': [1, 3, 5], 
+                    'n_estimators': [20, 40, 60, 80, 100, 120],
+                    'max_depth': [2, 4, 5, 10, 15],
+                    'min_samples_split': [2, 3, 4, 8, 12],
+                    'min_samples_leaf': [1, 3, 5, 8], 
                     'max_features': [2, 5, 7, 8]
                      },
               
               'KNN': {
-                        'n_neighbors': [2, 3, 5, 6, 7, 8, 9, 12],
+                        'n_neighbors': [2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
                         'weights': ['uniform', 'distance'],
                         'metric': ['euclidean', 'manhattan']
                     },
@@ -130,6 +100,14 @@ PARAMS_GRID = {'SVM':{
                                 1.0 * RBF(length_scale=2.5),
                                 1.0 * Matern(length_scale=1.0, nu=1.5)],
                      'alpha': [0.001, 0.01, 0.1, 1, 1.5, 2, 2.5]},
+                     
+                'xgboost':  {
+                        'n_estimators': [100, 200, 300],
+                        'max_depth':    [3, 5, 7, 10],
+                        'gamma': [0, 1, 5],
+                        'reg_alpha': [0, 1],  # L1 regularization
+                        'reg_lambda': [1, 2]  # L2 regularization
+                    },
 
                'Linear': {},
                'Ridge': {'alpha': [0.0001, 0.0005, 0.001, 0.003, 0.005, 0.01, 0.1, 1.0]},

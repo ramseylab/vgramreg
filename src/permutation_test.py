@@ -4,9 +4,10 @@ import numpy as np
 from typing import Tuple
 from sklearn.metrics import r2_score
 
-from src.config import paired_test
-from src.utils import per_error
+from src.utils import calculate_per_diff
 from src.feature_selection import ModelSelection
+
+from tqdm import tqdm
 
 def pair_permutation_test(model1_pred: np.array, 
                           model2_pred: np.array, 
@@ -17,8 +18,8 @@ def pair_permutation_test(model1_pred: np.array,
     """
 
     # Calculate percent error of the models
-    model1_scores      = per_error(ground_truth, model1_pred, y_LOD)
-    model2_scores      = per_error(ground_truth, model2_pred, y_LOD)
+    model1_scores      = calculate_per_diff(ground_truth, model1_pred, y_LOD)
+    model2_scores      = calculate_per_diff(ground_truth, model2_pred, y_LOD)
 
     r2_model1_score, r2_model2_score    = r2_score(ground_truth, model1_pred), r2_score(ground_truth, model2_pred)
     observed_r2_score  = np.abs(r2_model1_score - r2_model2_score)
@@ -41,7 +42,7 @@ def pair_permutation_test(model1_pred: np.array,
         model1_pred_temp[random_indexs]  = model2_pred[random_indexs]
         model2_pred_temp[random_indexs]  = model1_pred[random_indexs]
 
-        permutation_statistics[i]        = np.abs(per_error(ground_truth, model1_pred_temp, y_LOD) - per_error(ground_truth, model2_pred_temp, y_LOD))
+        permutation_statistics[i]        = np.abs(calculate_per_diff(ground_truth, model1_pred_temp, y_LOD) - calculate_per_diff(ground_truth, model2_pred_temp, y_LOD))
 
     # Calculate p-value
     p_value = np.mean(permutation_statistics >= observed_statistic)
@@ -50,7 +51,8 @@ def pair_permutation_test(model1_pred: np.array,
 
 
 def find_paired_permutation_test(dataset:Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series],
-                                models_features_per: dict) -> pd.DataFrame:
+                                models_features_per: dict,
+                                paired_test:dict) -> pd.DataFrame:
     """
         Calculates Statistical Significance level p-value for all the given pairs
     """
@@ -58,7 +60,7 @@ def find_paired_permutation_test(dataset:Tuple[pd.DataFrame, pd.DataFrame, pd.Se
     df      = pd.DataFrame(columns=['Model Comparison', 'Observed Diff', 'Diff mean', 'Diff std', 'p value'])
     (X_train, X_test, y_train, y_test) = dataset
 
-    for model1_name, model2_name in paired_test: 
+    for model1_name, model2_name in tqdm(paired_test): 
         # Load Models
         model1  = ModelSelection(model1_name, X_train, y_train)
         model2  = ModelSelection(model2_name, X_train, y_train)
