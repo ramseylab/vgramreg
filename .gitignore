@@ -15,4 +15,5 @@ src/__pycache__/*
 *.bin
 *.pth
 weights/*
+*/wandb/*
 
