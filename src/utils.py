@@ -13,6 +13,8 @@ from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score
 
+from sklearn.metrics import accuracy_score
+
 # from pycombat import Combat
 
 import matplotlib.pyplot as plt
@@ -76,7 +78,6 @@ def tsen_pca_viz(data:List[pd.DataFrame], batch_labels:List[str], labels:List[st
     os.makedirs('batch_effect', exist_ok=True)
     
     # Plot t-SNE
-
     fig, axs = plt.subplots(4, 1, figsize=(15, 12))
     
     sns.scatterplot(x='t-SNE1', y='t-SNE2', hue='Batch', style='labels', data=tsne_df, palette='deep', markers=['o', 's', '^'], s=20, ax=axs[0])
@@ -143,6 +144,34 @@ def calculate_per_diff_KFold(model:BaseEstimator,
     
     return np.array(per_diff_all).mean()
 
+def calculate_acc_KFold(model:BaseEstimator, 
+                       X:pd.DataFrame, 
+                       y:pd.Series,
+                       kf:KFold
+                       ) -> np.float64:
+    """
+        This function calculates the % difference for KFold.
+    """
+     
+    y_pred_all, y_test_all = [], []
+    
+    for train_index, test_index in kf.split(X):
+        model_ = clone(model)
+        
+        # Split the data into training and testing sets
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.to_numpy()[train_index], y.to_numpy()[test_index]
+    
+        model_.fit(X_train, y_train)
+        y_pred = model_.predict(X_test)
+
+        y_pred_all += y_pred.tolist()
+        y_test_all += y_test.tolist()
+
+    per_diff_all = calculate_acc(y_test_all, y_pred_all)
+    
+    return np.array(per_diff_all).mean()
+
 def calculate_per_diff(y_test:pd.Series, 
                        y_pred:np.array, 
                        y_LOD:float) -> np.float64:
@@ -178,6 +207,11 @@ def calculate_r2_score(y_test:pd.Series,
     
     
     return r2_score(y_test, y_pred)
+
+def calculate_acc(y_test:pd.Series, 
+                  y_pred:np.array) -> np.float64:
+    
+    return accuracy_score(y_test, y_pred)
 
 def calculate_r2_score_KFold(model:BaseEstimator, 
                        X:pd.DataFrame, 

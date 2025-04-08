@@ -2,9 +2,13 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
+from xgboost import XGBRegressor
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+from sklearn.ensemble  import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 from sklearn import svm
 from sklearn.base import BaseEstimator
@@ -39,12 +43,31 @@ def select_model(model_name:str) -> BaseEstimator:
         ('peak curvature' in model_name) or ('vcenter' in model_name):
         return LinearRegression()
     
+    elif (model_name=='xgboost'):
+        return XGBRegressor()
+    
     elif model_name=='Lasso':
         return Lasso(alpha=params['Lasso']['alpha'])
     
     elif model_name=='Ridge':
         return Ridge(alpha=params['Ridge']['alpha'])
 
+def select_model_classifier(model_name:str) -> BaseEstimator:
+    if model_name=='KNN':
+        return KNeighborsClassifier(metric='minkowski', 
+                                    n_neighbors=params['KNN']['n_neighbors'], 
+                                    weights=params['KNN']['weights'])
+
+    elif model_name=='SVM':
+        return SVC(C=params['SVM']['C'], 
+                   gamma=params['SVM']['gamma'], 
+                   kernel=params['SVM']['kernel'])
+        
+    elif model_name=='RF':
+        return RandomForestClassifier(max_depth=params['RF']['max_depth'], 
+                                      min_samples_leaf=params['RF']['min_samples_leaf'],\
+                                      min_samples_split=params['RF']['min_samples_split'], 
+                                      n_estimators=params['RF']['n_estimators'])
     
 
 

@@ -9,3 +9,4 @@ csaps==1.1.0
 numdifftools==0.9.41
 seaborn==0.13.2
 pyod==2.0.1
+xgboost

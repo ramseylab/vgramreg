@@ -8,17 +8,23 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold, GridSearchCV
+from tqdm import tqdm
 
 from typing import Tuple
 
-from src.load_models import select_model
-from src.utils import find_adj_score, calculate_y_LOD, calculate_r2_score, calculate_per_diff, calculate_combined_r2_and_per_diff, calculate_per_diff_KFold, calculate_r2_score_KFold, calculate_combined_r2_and_per_diff_KFold
+from src.load_models import select_model, select_model_classifier
+from src.utils import calculate_y_LOD, calculate_acc_KFold, calculate_per_diff_KFold, calculate_r2_score_KFold, calculate_combined_r2_and_per_diff_KFold
 from src.config import PARAMS_GRID
 
 class ModelSelection():
-    def __init__(self, model_name:str, X_train:pd.DataFrame, y_train:pd.Series):
+    def __init__(self,
+                 model_name:str, 
+                 X_train:pd.DataFrame, 
+                 y_train:pd.Series,
+                 is_classifier:bool=False):
+        
         self.X_train, self.y_train = X_train, y_train
-        self.model = select_model(model_name)
+        self.model = select_model_classifier(model_name) if is_classifier else select_model(model_name)
         self.model_name = model_name
         self.all_feature_scores = []
     
@@ -39,7 +45,10 @@ class ModelSelection():
 
         elif metric=='per_diff':  
             return calculate_per_diff_KFold(self.model, self.X_train[features], self.y_train, self.y_LOD, kf)
-
+        
+        elif metric=='acc':  
+            return calculate_acc_KFold(self.model, self.X_train[features], self.y_train, kf)
+        
         else:
             return calculate_combined_r2_and_per_diff_KFold(self.model, self.X_train[features], self.y_train, kf, self.y_LOD, use_adjusted_r2=use_adjusted_r2)
 
@@ -62,12 +71,14 @@ class ModelSelection():
     def calculate_score_hyperparameter(self, 
                                        params:dict, 
                                        metric:str, 
+                                       datatypes:dict,
                                        features:list, 
                                        kf:KFold, 
                                        use_adjusted_r2:bool) -> np.float64:
         
         # Assign new parameters to the base model
         params_dict = params.to_dict()
+        # params_dict = {key: np.array(params_dict[key], dtype=datatypes[key]) for key in datatypes}
         self.model.set_params(**params_dict)
 
         # Calcualte metric
@@ -76,6 +87,9 @@ class ModelSelection():
 
         elif metric=='per_diff':  
             return calculate_per_diff_KFold(self.model, self.X_train[features], self.y_train, self.y_LOD, kf)
+            
+        elif metric=='acc':
+            return calculate_acc_KFold(self.model, self.X_train[features], self.y_train, kf)
 
         else:
             return calculate_combined_r2_and_per_diff_KFold(self.model, self.X_train[features], self.y_train, kf, self.y_LOD, use_adjusted_r2=use_adjusted_r2)
@@ -91,13 +105,15 @@ class ModelSelection():
         
     
         all_params_df = self.list_all_parameters(PARAMS_GRID[self.model_name])
-        all_params_df['score'] = all_params_df.apply(self.calculate_score_hyperparameter, axis=1, args=(metric, testing_feature,kf,use_adjusted_r2))
+        datatypes     = all_params_df.dtypes.to_dict()
+        all_params_df['score'] = all_params_df.apply(self.calculate_score_hyperparameter, axis=1, args=(metric, datatypes, testing_feature,kf,use_adjusted_r2))
 
         if metric=='per_diff': best_parameters = all_params_df.loc[[all_params_df['score'].idxmin()]]
         else: best_parameters = all_params_df.loc[[all_params_df['score'].idxmax()]]
         
         best_score      = best_parameters['score'].to_list()[0]
         return best_parameters.drop('score', axis=1).to_dict(orient='records')[0], best_score
+    
 
 
     def find_best_features(self, 
@@ -120,14 +136,17 @@ class ModelSelection():
             one_line_features    = []
             one_line_best_params = []
             
-            for feature in all_features:
-                
+            for feature in tqdm(all_features):
                 if feature not in self.selected_features:
                     testing_feature = self.selected_features + [feature]
 
-                    #Fine tune the hyperparametrs with R2
+                    # Fine tune the hyperparametrs with R2
                     if (tune_hyperparameter) and (len(PARAMS_GRID[self.model_name].keys())>0):
-                        best_param, _ = self.find_best_score_hyperparameter_KFold(kf, testing_feature, 'r2', use_adjusted_r2=False)
+                        if metric=='acc':
+                            best_param, _ = self.find_best_score_hyperparameter_KFold(kf, testing_feature, 'acc', use_adjusted_r2=False)
+
+                        else:     
+                            best_param, _ = self.find_best_score_hyperparameter_KFold(kf, testing_feature, 'r2', use_adjusted_r2=False)
                    
                         self.model.set_params(**best_param)   # Set the best hyperparameters
                         one_line_best_params.append(best_param)

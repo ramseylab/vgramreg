@@ -80,6 +80,6 @@ def find_paired_permutation_test(dataset:Tuple[pd.DataFrame, pd.DataFrame, pd.Se
                                     'Observed Diff':[observed_diff], \
                                     'Diff mean':diff_mean, 'Diff std':diff_std,'p value':[p_value]})
         
-        df   = pd.concat([df, temp], ignore_index=True)
+        df = pd.concat([df, temp.dropna(axis=1, how='all')], ignore_index=True)
 
     return df

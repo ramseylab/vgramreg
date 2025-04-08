@@ -22,8 +22,7 @@ models_features_r2 = {
                 'Linear': ['min(dS/dV)', 'V_max(S)', 'f2', 'f1', 'V_max(dS/dV)'], 
                 'RF':     ['min(dS/dV)', 'area(S)', 'f2', 'V_max(dS/dV)'], 
                 'SVM':    ['min(dS/dV)', 'area(S)', 'vcenter', 'V_max(dS/dV)', 'max(dS/dV)'], 
-                'GP':     ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)'],
-                'xgboost': ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)']                    
+                'GP':     ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)', 'max(dS/dV)']                 
                 }
 
 models_features_per = models_features_r2.copy()
@@ -34,8 +33,7 @@ models_features_per.update({
                 'Linear': ['min(dS/dV)', 'V_max(S)', 'f2', 'f1', 'V_max(dS/dV)'], 
                 'RF':     ['min(dS/dV)', 'area(S)', 'f2', 'V_max(dS/dV)'], 
                 'SVM':    ['min(dS/dV)', 'area(S)', 'vcenter', 'V_max(dS/dV)', 'max(dS/dV)'], 
-                'GP':     ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)'],
-                'xgboost': ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)']
+                'GP':     ['min(dS/dV)', 'area(S)', 'V_max(dS/dV)', 'max(dS/dV)']
                 })
 
 paired_test = [('KNN', 'Linear'),
@@ -60,18 +58,19 @@ params = {
     'SVM': {'C': 250, 
             'gamma': 0.1, 
             'kernel': 'rbf'},
-    'RF': {'n_estimators': 80, 
+    'RF': {'n_estimators': 40, 
            'max_depth': 5, 
-           'min_samples_split': 2, 
+           'min_samples_split': 4, 
            'min_samples_leaf': 1, 
            'max_features': 2},
     'KNN': {'n_neighbors': 12, 
             'weights': 'distance', 
             'metric': 'manhattan'},
-   'GP': {'kernel': 1**2 * RBF(length_scale=2.5), 
+   'GP': {'kernel': 1**2 * Matern(length_scale=1, nu=1.5), 
           'alpha': 2.5},
     'Linear': {}
 }
+
 
 # Parameter Grids
 PARAMS_GRID = {'SVM':{
@@ -80,11 +79,11 @@ PARAMS_GRID = {'SVM':{
                     'kernel': ['rbf', 'sigmoid']},
               
               'RF': {
-                    'n_estimators': [20, 40, 60, 80, 100, 120],
-                    'max_depth': [2, 4, 5, 10, 15],
-                    'min_samples_split': [2, 3, 4, 8, 12],
-                    'min_samples_leaf': [1, 3, 5, 8], 
-                    'max_features': [2, 5, 7, 8]
+                    'n_estimators': [20, 40, 60, 80],
+                    'max_depth': [2, 4, 5, 10],
+                    'min_samples_split': [2, 3, 4, 8],
+                    'min_samples_leaf': [1, 3, 5], 
+                    'max_features': [2, 5]
                      },
               
               'KNN': {
@@ -93,13 +92,17 @@ PARAMS_GRID = {'SVM':{
                         'metric': ['euclidean', 'manhattan']
                     },
               
-              'GP': {'kernel': [1.0 * RBF(length_scale=1.0), 
-                                1.0 * RBF(length_scale=0.5), 
+              'GP': {'kernel': [1.0 * RBF(length_scale=1.0),  
                                 1.0 * RBF(length_scale=1.5), 
                                 1.0 * RBF(length_scale=2.0),
                                 1.0 * RBF(length_scale=2.5),
-                                1.0 * Matern(length_scale=1.0, nu=1.5)],
-                     'alpha': [0.001, 0.01, 0.1, 1, 1.5, 2, 2.5]},
+                                1.0 * RBF(length_scale=3.0),
+                                1.0 * RBF(length_scale=3.5),
+                                1.0 * Matern(length_scale=1.0, nu=1.5),
+                                1.0 * Matern(length_scale=1.5, nu=1.5),
+                                1.0 * Matern(length_scale=1.5, nu=2.0),
+                                1.0 * Matern(length_scale=2, nu=2.0)],
+                     'alpha': [0.001, 0.01, 0.1, 1, 1.5, 2, 2.5, 3.0, 3.5]},
                      
                 'xgboost':  {
                         'n_estimators': [100, 200, 300],
@@ -110,9 +113,7 @@ PARAMS_GRID = {'SVM':{
                     },
 
                'Linear': {},
-               'Ridge': {'alpha': [0.0001, 0.0005, 0.001, 0.003, 0.005, 0.01, 0.1, 1.0]},
-               'Lasso': {'alpha': [0.00001, 0.00003, 0.00005, 0.0001, 0.0003, 0.0005, 0.001]}
-              }
+            }
 
 # Finetunin after feature selection
 # params = {
