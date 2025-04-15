@@ -54,22 +54,11 @@ paired_test = [('KNN', 'Linear'),
 
 #### Hyperparamters With Norm ############
 # Initial params
-params = {
-    'SVM': {'C': 250, 
-            'gamma': 0.1, 
-            'kernel': 'rbf'},
-    'RF': {'n_estimators': 40, 
-           'max_depth': 5, 
-           'min_samples_split': 4, 
-           'min_samples_leaf': 1, 
-           'max_features': 2},
-    'KNN': {'n_neighbors': 12, 
-            'weights': 'distance', 
-            'metric': 'manhattan'},
-   'GP': {'kernel': 1**2 * Matern(length_scale=1, nu=1.5), 
-          'alpha': 2.5},
-    'Linear': {}
-}
+params =  {'KNN': {'n_neighbors': 12, 'weights': 'distance', 'metric': 'manhattan'},
+           'Linear': {},
+           'RF': {'n_estimators': 100, 'max_depth': 10, 'min_samples_split': 4, 'min_samples_leaf': 1, 'max_features': 2},
+           'SVM': {'C': 250, 'gamma': 0.1, 'kernel': 'rbf'},
+           'GP': {'kernel': 1**2 * Matern(length_scale=1, nu=1.5), 'alpha': 2.5}}
 
 
 # Parameter Grids
