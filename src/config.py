@@ -68,11 +68,11 @@ PARAMS_GRID = {'SVM':{
                     'kernel': ['rbf', 'sigmoid']},
               
               'RF': {
-                    'n_estimators': [20, 40, 60, 80],
-                    'max_depth': [2, 4, 5, 10],
-                    'min_samples_split': [2, 3, 4, 8],
-                    'min_samples_leaf': [1, 3, 5], 
-                    'max_features': [2, 5]
+                    'n_estimators': [20, 40, 80, 100, 120, 150],
+                    'max_depth': [5, 10, 15, 20, 25],
+                    'min_samples_split': [3, 4, 6, 8, 10, 12, 14, 16],
+                    'min_samples_leaf': [1, 3, 5, 8],
+                    'max_features': [2, 5, 7, 8]
                      },
               
               'KNN': {
